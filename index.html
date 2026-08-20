@@ -2696,47 +2696,76 @@ async function deployReadOnlyLink() {
     showToast('正在生成只读链接...');
     
     try {
-        // 获取当前页面的完整HTML
-        const currentHTML = document.documentElement.outerHTML;
+        // 获取原始HTML源码
+        const srcResp = await fetch(`https://raw.githubusercontent.com/${GH_REPO}/main/index.html?t=${Date.now()}`);
+        let readonlyHTML = await srcResp.text();
         
-        // 构建只读版HTML
-        // 移除脚本中的预填充和sync相关（只读版不需要）
-        // 注入只读CSS和覆盖初始化
+        // 构建嵌入数据
+        const stateJSON = JSON.stringify(state)
+            .replace(/\\/g, '\\\\').replace(/'/g, "\\'")
+            .replace(/</g, '\\u003c').replace(/>/g, '\\u003e');
+        
+        // 注入只读CSS
         const readonlyCSS = `<style>
-        .readonly-mode .btn, .readonly-mode button[onclick*="open"], 
+        .readonly-mode .btn, .readonly-mode button[onclick*="open"],
         .readonly-mode button[onclick*="add"], .readonly-mode button[onclick*="delete"],
         .readonly-mode button[onclick*="edit"], .readonly-mode button[onclick*="remove"],
         .readonly-mode button[onclick*="bind"], .readonly-mode button[onclick*="deploy"],
         .readonly-mode button[onclick*="export"], .readonly-mode button[onclick*="import"],
-        .readonly-mode button[onclick*="sync"], .readonly-mode button[onclick*="close"],
-        .readonly-mode button[onclick*="save"], .readonly-mode button[onclick*="toggle"],
+        .readonly-mode button[onclick*="sync"], .readonly-mode button[onclick*="toggle"],
+        .readonly-mode button[onclick*="save"], .readonly-mode button[onclick*="close"],
         .readonly-mode .add-btn, .readonly-mode .del-btn, .readonly-mode .edit-btn,
         .readonly-mode .lib-add-row, .readonly-mode .library-actions,
         .readonly-mode #holiday-btn, .readonly-mode .char-style-row button:last-child,
-        .readonly-mode .note-input, .readonly-mode textarea, .readonly-mode input[type="text"],
-        .readonly-mode #opp-modal textarea, .readonly-mode #opp-modal input { display:none !important; pointer-events:none !important; }
-        .readonly-mode { cursor: default; }
+        .readonly-mode .note-input, .readonly-mode textarea,
+        .readonly-mode #opp-modal textarea, .readonly-mode #opp-modal input,
+        .readonly-mode input[type="text"]:not([id="date-jump"]) { display:none !important; }
+        .readonly-mode { cursor: default !important; }
+        .readonly-mode .cell { cursor: default !important; }
         </style>`;
         
-        const readonlyScript = `<script>
-        // 只读版：用嵌入数据初始化
-        document.documentElement.classList.add('readonly-mode');
-        // 覆盖所有编辑函数为空操作
-        ['saveState','addTheme','deleteTheme','renameTheme','addStock','deleteStock',
-         'toggleCell','toggleStockCell','toggleMarketAtm','toggleMarketStats',
-         'bindGitHub','ghSaveData','deployReadOnlyLink'].forEach(fn => {
-            try { window[fn] = function(){}; } catch(e){}
-        });
-        document.title = document.title + ' (只读版)';
+        readonlyHTML = readonlyHTML.replace('</head>', readonlyCSS + '</head>');
+        
+        // 注入只读初始化脚本（在 </body> 之前）
+        const readonlyInitScript = `<script>
+        (function() {
+            document.documentElement.classList.add('readonly-mode');
+            // 覆盖保存和编辑函数
+            window.saveState = function() {};
+            window.ghSaveData = function() { return Promise.resolve(false); };
+            window.bindGitHub = function() {};
+            window.deployReadOnlyLink = function() {};
+            window.syncFromCloud = function() {};
+            // 覆盖数据初始化
+            var _rd = JSON.parse('${stateJSON}');
+            window._readonlyData = _rd;
+            // 覆盖 init 中的 loadState
+            var _origLoadState = window.loadState;
+            window.loadState = function() {
+                state = {
+                    themes: _rd.themes || [],
+                    data: _rd.data || {},
+                    stocks: _rd.stocks || {},
+                    holidays: _rd.holidays || [],
+                    marketAtm: _rd.marketAtm || {},
+                    stockData: _rd.stockData || {},
+                    markedDates: _rd.markedDates || {},
+                    dailyNotes: _rd.dailyNotes || {},
+                    dailyPredictions: _rd.dailyPredictions || {},
+                    marketPhases: _rd.marketPhases || {},
+                    phaseNotes: _rd.phaseNotes || {},
+                    charStyle: _rd.charStyle || {},
+                    marketStats: _rd.marketStats || {},
+                    oppPredict: _rd.oppPredict || {}
+                };
+            };
+            document.title = document.title + ' (只读版)';
+        })();
         <\/script>`;
         
-        // 在 </head> 前注入只读CSS
-        let readonlyHTML = currentHTML.replace('</head>', readonlyCSS + '</head>');
-        // 在 </body> 前注入只读脚本
-        readonlyHTML = readonlyHTML.replace('</body>', readonlyScript + '</body>');
+        readonlyHTML = readonlyHTML.replace('</body>', readonlyInitScript + '</body>');
         
-        // 上传到 GitHub 仓库的 readonly.html
-        // 先获取文件SHA（如果已存在）
+        // 上传到 GitHub
         let fileSha = '';
         try {
             const metaResp = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/readonly.html`, {
@@ -2750,7 +2779,7 @@ async function deployReadOnlyLink() {
         
         const content = btoa(unescape(encodeURIComponent(readonlyHTML)));
         const body = {
-            message: `Update readonly version ${new Date().toLocaleString('zh-CN')}`,
+            message: `Update readonly ${new Date().toLocaleString('zh-CN')}`,
             content: content
         };
         if (fileSha) body.sha = fileSha;
@@ -2766,53 +2795,18 @@ async function deployReadOnlyLink() {
         
         if (saveResp.ok) {
             const link = `https://${GH_REPO.split('/')[0]}.github.io/${GH_REPO.split('/')[1]}/readonly.html`;
-            // 复制链接到剪贴板
             try { await navigator.clipboard.writeText(link); } catch(e) {}
-            showToast('只读链接已生成，已复制到剪贴板！');
-            setTimeout(() => alert('只读版链接已复制：\n\n' + link + '\n\n直接发给别人即可，对方只能看不能改。'), 500);
+            showToast('只读链接已生成并复制到剪贴板！');
+            setTimeout(() => alert('只读版链接已复制：\n\n' + link + '\n\n发给别人即可，对方只能看不能改。'), 500);
         } else {
             const err = await saveResp.json();
             showToast('部署失败：' + err.message, true);
         }
     } catch(e) {
         showToast('生成失败：' + e.message, true);
+        console.error(e);
     }
 }
-
-function importData(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        try {
-            const data = JSON.parse(e.target.result);
-            if (!data.themes) throw new Error('format');
-            state = {
-                themes: data.themes || [],
-                data: data.data || {},
-                stocks: data.stocks || {},
-                holidays: data.holidays || [],
-                marketAtm: data.marketAtm || {},
-                stockData: data.stockData || {},
-                markedDates: data.markedDates || {},
-                dailyNotes: data.dailyNotes || {},
-                dailyPredictions: data.dailyPredictions || {},
-                marketPhases: data.marketPhases || {},
-                phaseNotes: data.phaseNotes || {}
-            };
-            saveState();
-            windowEndDate = getRecentTradingDay();
-            renderLibrary();
-            renderGrid();
-            showToast('导入成功');
-        } catch(err) {
-            showToast('导入失败：文件格式错误', true);
-        }
-    };
-    reader.readAsText(file);
-    event.target.value = '';
-}
-
 
 // ===== GitHub Cloud Sync =====
 function getGhToken() {
