@@ -1026,23 +1026,41 @@ header h1 { font-size: 22px; color: #58a6ff; }
 }
 </style>
 <style>
-        .readonly-mode .btn, .readonly-mode button[onclick*="open"],
-        .readonly-mode button[onclick*="add"], .readonly-mode button[onclick*="delete"],
-        .readonly-mode button[onclick*="edit"], .readonly-mode button[onclick*="remove"],
-        .readonly-mode button[onclick*="bind"], .readonly-mode button[onclick*="deploy"],
-        .readonly-mode button[onclick*="export"], .readonly-mode button[onclick*="import"],
-        .readonly-mode button[onclick*="sync"], .readonly-mode button[onclick*="toggle"],
-        .readonly-mode button[onclick*="save"], .readonly-mode button[onclick*="close"],
-        .readonly-mode .add-btn, .readonly-mode .del-btn, .readonly-mode .edit-btn,
-        .readonly-mode .lib-add-row, .readonly-mode .library-actions,
-        .readonly-mode #holiday-btn, .readonly-mode .char-style-row button:last-child,
-        .readonly-mode .note-input, .readonly-mode textarea,
-        .readonly-mode #opp-modal textarea, .readonly-mode #opp-modal input,
-        .readonly-mode input[type="text"]:not([id="date-jump"]) { display:none !important; }
-        .readonly-mode { cursor: default !important; }
-        .readonly-mode .cell { cursor: default !important; }
-        </style></head>
+.readonly-mode .header-actions button:not(#exportReadOnlyBtn):not(#exportDataBtn),
+.readonly-mode #importBtn,
+.readonly-mode #dailyNoteBtn { display: none !important; }
+.readonly-mode textarea { pointer-events: none; opacity: 0.85; background: rgba(255,255,255,0.03) !important; }
+.readonly-mode input[type="text"]:not([readonly]):not(#date-jump) { pointer-events: none; }
+.readonly-mode .cell { cursor: default !important; }
+.readonly-mode::after {
+    content: '\1f4d6  \53EA\8BFB\6A21\5F0F';
+    position: fixed; bottom: 12px; right: 12px;
+    background: rgba(56,139,253,0.15); color: #58a6ff;
+    padding: 4px 12px; border-radius: 12px; font-size: 12px;
+    pointer-events: none; z-index: 9999;
+    border: 1px solid rgba(56,139,253,0.3);
+}
+</style>
+</head>
 <body>
+<script>
+(function() {
+    document.documentElement.classList.add('readonly-mode');
+    window.saveState = function() {};
+    window.ghSaveData = function() { return Promise.resolve(false); };
+    window.bindGitHub = function() {};
+    window.deployReadOnlyLink = function() {};
+    window.syncFromCloud = function() {};
+    var _rd = JSON.parse('{"themes": ["PCB", "CPO", "创新药", "抱团", "算力", "半导体", "存储", "粮食", "MLCC"], "data": {"PCB": {"2026-08-04": "强", "2026-08-05": "强", "2026-08-06": "强", "2026-08-03": "弱", "2026-08-07": "强", "2026-08-11": "稳", "2026-08-13": "稳", "2026-08-14": "稳", "2026-08-17": "强", "2026-08-12": "稳", "2026-08-18": "弱", "2026-08-19": "弱", "2026-08-20": "稳"}, "CPO": {"2026-08-03": "弱", "2026-08-04": "强", "2026-08-05": "弱", "2026-08-06": "弱", "2026-08-07": "强", "2026-08-11": "稳", "2026-08-17": "强", "2026-08-14": "稳", "2026-08-13": "稳", "2026-08-12": "稳", "2026-08-18": "稳", "2026-08-19": "弱", "2026-08-20": "稳"}, "创新药": {"2026-08-03": "强", "2026-08-04": "弱", "2026-08-05": "弱", "2026-08-06": "强", "2026-08-07": "强", "2026-08-10": "强", "2026-08-11": "稳", "2026-08-17": "稳", "2026-08-14": "稳", "2026-08-12": "稳", "2026-08-13": "强", "2026-08-18": "弱", "2026-08-19": "弱", "2026-08-20": "强"}, "抱团": {"2026-08-13": "稳", "2026-08-12": "强", "2026-08-14": "稳", "2026-08-17": "稳", "2026-08-11": "强", "2026-08-20": "强"}, "算力": {"2026-08-11": "稳", "2026-08-12": "稳", "2026-08-13": "稳", "2026-08-14": "稳", "2026-08-17": "稳", "2026-08-18": "弱", "2026-08-19": "弱", "2026-08-20": "稳"}, "半导体": {"2026-08-11": "稳", "2026-08-12": "稳", "2026-08-13": "稳", "2026-08-14": "稳", "2026-08-17": "强", "2026-08-18": "弱", "2026-08-19": "弱", "2026-08-20": "稳"}, "存储": {"2026-08-17": "强", "2026-08-11": "稳", "2026-08-12": "稳", "2026-08-13": "稳", "2026-08-14": "稳", "2026-08-18": "弱", "2026-08-19": "弱", "2026-08-20": "稳"}, "粮食": {"2026-08-17": "强", "2026-08-18": "强", "2026-08-19": "强"}, "MLCC": {"2026-08-20": "稳", "2026-08-19": "弱", "2026-08-18": "弱"}}, "stocks": {"PCB": ["宝鼎科技", "铜冠铜箔", "洁美科技", "科翔股份"], "CPO": [], "创新药": ["哈药股份", "药明康德", "万邦医药", "百普赛斯"], "抱团": ["哈药股份", "立新能源", "一鸣食品", "艾艾精工"], "算力": ["协创数据", "宏景科技"], "半导体": [], "存储": [], "粮食": ["神龙种业", "金健米业"], "MLCC": ["风华高科", "三环集团"]}, "holidays": [], "marketAtm": {"2026-08-03": "弱", "2026-08-04": "强", "2026-08-05": "强", "2026-08-06": "强", "2026-08-11": "稳", "2026-08-17": "强", "2026-08-13": "弱", "2026-08-12": "稳", "2026-08-18": "弱", "2026-08-14": "稳", "2026-08-19": "弱", "2026-08-20": "强"}, "stockData": {"PCB::宝鼎科技": {"2026-08-13": "稳", "2026-08-11": "强", "2026-08-12": "强", "2026-08-14": "稳", "2026-08-17": "稳"}, "创新药::哈药股份": {"2026-08-05": "弱"}, "PCB::洁美科技": {"2026-08-11": "强", "2026-08-12": "弱", "2026-08-13": "弱", "2026-08-14": "弱", "2026-08-17": "稳"}, "PCB::科翔股份": {"2026-08-11": "强", "2026-08-12": "稳", "2026-08-13": "稳", "2026-08-14": "稳", "2026-08-17": "强"}, "PCB::铜冠铜箔": {"2026-08-14": "稳", "2026-08-11": "稳", "2026-08-12": "稳", "2026-08-13": "稳", "2026-08-17": "强"}}, "markedDates": {"2026-08-13": "第一次大分歧", "2026-08-18": "第二次分歧", "2026-08-19": "退潮确认", "2026-08-20": "第一次反弹"}, "dailyNotes": {"2026-08-11": "", "2026-08-17": "毕业照", "2026-08-14": "接近尾声", "2026-08-18": "风险远没有释放", "2026-08-19": "不要抄底"}, "dailyPredictions": {"2026-08-11": "", "2026-08-14": "今日整体的市场氛围是偏强的，科技呈现一种该弱不弱然后到尾盘上翘的姿态，这种是比较不好的姿态。选择非主流题材，避免科技和创新药。选择日K线两日低吸法。", "2026-08-17": "科技延续走强的趋势，连续强了两天，加上进入了震荡阶段，科技的风险升高，不适宜继续停留。粮食是第二次打出板块效应，引起关注在适当位置介入，电网有表现。均指向明天风险。押注防御板块，粮食、电力、军工，排除创新药。优先形态，从日K出发二日低吸。"}, "marketPhases": {"2026-08-13": "震荡期", "2026-08-05": "主升期", "2026-08-07": "主升期", "2026-08-10": "主升期", "2026-08-06": "主升期", "2026-08-18": "退潮期", "2026-08-11": "震荡期", "2026-08-12": "震荡期", "2026-08-14": "震荡期", "2026-08-17": "震荡期", "2026-08-04": "主升期", "2026-08-19": "退潮期", "2026-08-20": "退潮期"}, "phaseNotes": {"2026-08-04": "起气"}, "charStyle": {}, "marketStats": {}, "oppPredict": {"row1": {}, "row1Result": {}, "row2": {}, "row2Result": {}}}');
+    window._readonlyData = _rd;
+    var _origLoadState = window.loadState;
+    window.loadState = function() {
+        state = JSON.parse(JSON.stringify(_rd));
+    };
+    document.title = document.title + ' (\u53EA\u8BFB\u7248)';
+})();
+</script>
+
 <div class="container">
     <header>
         <div style="display:flex;align-items:center;gap:16px">
@@ -2614,7 +2632,23 @@ function removeHoliday(date) {
 function exportReadOnly() {
     let html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
 
-    // 1. Inject readonly CSS before </head>
+    // 1. Inject readonly CSS before <style>
+.readonly-mode .header-actions button:not(#exportReadOnlyBtn):not(#exportDataBtn),
+.readonly-mode #importBtn,
+.readonly-mode #dailyNoteBtn { display: none !important; }
+.readonly-mode textarea { pointer-events: none; opacity: 0.85; background: rgba(255,255,255,0.03) !important; }
+.readonly-mode input[type="text"]:not([readonly]):not(#date-jump) { pointer-events: none; }
+.readonly-mode .cell { cursor: default !important; }
+.readonly-mode::after {
+    content: '\1f4d6  \53EA\8BFB\6A21\5F0F';
+    position: fixed; bottom: 12px; right: 12px;
+    background: rgba(56,139,253,0.15); color: #58a6ff;
+    padding: 4px 12px; border-radius: 12px; font-size: 12px;
+    pointer-events: none; z-index: 9999;
+    border: 1px solid rgba(56,139,253,0.3);
+}
+</style>
+</head>
     const readonlyCSS = `<style id="readonly-override">
 body.readonly-mode .header-actions,
 body.readonly-mode [onclick*="openLibraryModal"],
@@ -2651,7 +2685,39 @@ body.readonly-mode [onclick*="toggleGuideArticle"] {
     pointer-events: none !important;
 }
 </style>`;
-    html = html.replace('</head>', readonlyCSS + '\n</head>');
+    html = html.replace('<style>
+.readonly-mode .header-actions button:not(#exportReadOnlyBtn):not(#exportDataBtn),
+.readonly-mode #importBtn,
+.readonly-mode #dailyNoteBtn { display: none !important; }
+.readonly-mode textarea { pointer-events: none; opacity: 0.85; background: rgba(255,255,255,0.03) !important; }
+.readonly-mode input[type="text"]:not([readonly]):not(#date-jump) { pointer-events: none; }
+.readonly-mode .cell { cursor: default !important; }
+.readonly-mode::after {
+    content: '\1f4d6  \53EA\8BFB\6A21\5F0F';
+    position: fixed; bottom: 12px; right: 12px;
+    background: rgba(56,139,253,0.15); color: #58a6ff;
+    padding: 4px 12px; border-radius: 12px; font-size: 12px;
+    pointer-events: none; z-index: 9999;
+    border: 1px solid rgba(56,139,253,0.3);
+}
+</style>
+</head>', readonlyCSS + '\n<style>
+.readonly-mode .header-actions button:not(#exportReadOnlyBtn):not(#exportDataBtn),
+.readonly-mode #importBtn,
+.readonly-mode #dailyNoteBtn { display: none !important; }
+.readonly-mode textarea { pointer-events: none; opacity: 0.85; background: rgba(255,255,255,0.03) !important; }
+.readonly-mode input[type="text"]:not([readonly]):not(#date-jump) { pointer-events: none; }
+.readonly-mode .cell { cursor: default !important; }
+.readonly-mode::after {
+    content: '\1f4d6  \53EA\8BFB\6A21\5F0F';
+    position: fixed; bottom: 12px; right: 12px;
+    background: rgba(56,139,253,0.15); color: #58a6ff;
+    padding: 4px 12px; border-radius: 12px; font-size: 12px;
+    pointer-events: none; z-index: 9999;
+    border: 1px solid rgba(56,139,253,0.3);
+}
+</style>
+</head>');
 
     // 2. Embed current state data
     const stateJSON = JSON.stringify(state).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/</g, '\\u003c').replace(/>/g, '\\u003e');
@@ -2740,43 +2806,41 @@ async function deployReadOnlyLink() {
         .readonly-mode .cell { cursor: default !important; }
         </style>`;
         
-        readonlyHTML = readonlyHTML.replace('</head>', readonlyCSS + '</head>');
+        readonlyHTML = readonlyHTML.replace('<style>
+.readonly-mode .header-actions button:not(#exportReadOnlyBtn):not(#exportDataBtn),
+.readonly-mode #importBtn,
+.readonly-mode #dailyNoteBtn { display: none !important; }
+.readonly-mode textarea { pointer-events: none; opacity: 0.85; background: rgba(255,255,255,0.03) !important; }
+.readonly-mode input[type="text"]:not([readonly]):not(#date-jump) { pointer-events: none; }
+.readonly-mode .cell { cursor: default !important; }
+.readonly-mode::after {
+    content: '\1f4d6  \53EA\8BFB\6A21\5F0F';
+    position: fixed; bottom: 12px; right: 12px;
+    background: rgba(56,139,253,0.15); color: #58a6ff;
+    padding: 4px 12px; border-radius: 12px; font-size: 12px;
+    pointer-events: none; z-index: 9999;
+    border: 1px solid rgba(56,139,253,0.3);
+}
+</style>
+</head>', readonlyCSS + '<style>
+.readonly-mode .header-actions button:not(#exportReadOnlyBtn):not(#exportDataBtn),
+.readonly-mode #importBtn,
+.readonly-mode #dailyNoteBtn { display: none !important; }
+.readonly-mode textarea { pointer-events: none; opacity: 0.85; background: rgba(255,255,255,0.03) !important; }
+.readonly-mode input[type="text"]:not([readonly]):not(#date-jump) { pointer-events: none; }
+.readonly-mode .cell { cursor: default !important; }
+.readonly-mode::after {
+    content: '\1f4d6  \53EA\8BFB\6A21\5F0F';
+    position: fixed; bottom: 12px; right: 12px;
+    background: rgba(56,139,253,0.15); color: #58a6ff;
+    padding: 4px 12px; border-radius: 12px; font-size: 12px;
+    pointer-events: none; z-index: 9999;
+    border: 1px solid rgba(56,139,253,0.3);
+}
+</style>
+</head>');
         
-        // 注入只读初始化脚本（在 <script>
-        (function() {
-            document.documentElement.classList.add('readonly-mode');
-            // 覆盖保存和编辑函数
-            window.saveState = function() {};
-            window.ghSaveData = function() { return Promise.resolve(false); };
-            window.bindGitHub = function() {};
-            window.deployReadOnlyLink = function() {};
-            window.syncFromCloud = function() {};
-            // 覆盖数据初始化
-            var _rd = JSON.parse('{"themes":["PCB","CPO","创新药","抱团","算力","半导体","存储","粮食","MLCC"],"data":{"PCB":{"2026-08-04":"强","2026-08-05":"强","2026-08-06":"强","2026-08-03":"弱","2026-08-07":"强","2026-08-11":"稳","2026-08-13":"稳","2026-08-14":"稳","2026-08-17":"强","2026-08-12":"稳","2026-08-18":"弱","2026-08-19":"弱","2026-08-20":"稳"},"CPO":{"2026-08-03":"弱","2026-08-04":"强","2026-08-05":"弱","2026-08-06":"弱","2026-08-07":"强","2026-08-11":"稳","2026-08-17":"强","2026-08-14":"稳","2026-08-13":"稳","2026-08-12":"稳","2026-08-18":"稳","2026-08-19":"弱","2026-08-20":"稳"},"创新药":{"2026-08-03":"强","2026-08-04":"弱","2026-08-05":"弱","2026-08-06":"强","2026-08-07":"强","2026-08-10":"强","2026-08-11":"稳","2026-08-17":"稳","2026-08-14":"稳","2026-08-12":"稳","2026-08-13":"强","2026-08-18":"弱","2026-08-19":"弱","2026-08-20":"强"},"抱团":{"2026-08-13":"稳","2026-08-12":"强","2026-08-14":"稳","2026-08-17":"稳","2026-08-11":"强","2026-08-20":"强"},"算力":{"2026-08-11":"稳","2026-08-12":"稳","2026-08-13":"稳","2026-08-14":"稳","2026-08-17":"稳","2026-08-18":"弱","2026-08-19":"弱","2026-08-20":"稳"},"半导体":{"2026-08-11":"稳","2026-08-12":"稳","2026-08-13":"稳","2026-08-14":"稳","2026-08-17":"强","2026-08-18":"弱","2026-08-19":"弱","2026-08-20":"稳"},"存储":{"2026-08-17":"强","2026-08-11":"稳","2026-08-12":"稳","2026-08-13":"稳","2026-08-14":"稳","2026-08-18":"弱","2026-08-19":"弱","2026-08-20":"稳"},"粮食":{"2026-08-17":"强","2026-08-18":"强","2026-08-19":"强"},"MLCC":{"2026-08-20":"稳","2026-08-19":"弱","2026-08-18":"弱"}},"stocks":{"PCB":["宝鼎科技","铜冠铜箔","洁美科技","科翔股份"],"CPO":[],"创新药":["哈药股份","药明康德","万邦医药","百普赛斯"],"抱团":["哈药股份","立新能源","一鸣食品","艾艾精工"],"算力":["协创数据","宏景科技"],"半导体":[],"存储":[],"粮食":["神龙种业","金健米业"],"MLCC":["风华高科","三环集团"]},"holidays":[],"marketAtm":{"2026-08-03":"弱","2026-08-04":"强","2026-08-05":"强","2026-08-06":"强","2026-08-11":"稳","2026-08-17":"强","2026-08-13":"弱","2026-08-12":"稳","2026-08-18":"弱","2026-08-14":"稳","2026-08-19":"弱","2026-08-20":"强"},"stockData":{"PCB::宝鼎科技":{"2026-08-13":"稳","2026-08-11":"强","2026-08-12":"强","2026-08-14":"稳","2026-08-17":"稳"},"创新药::哈药股份":{"2026-08-05":"弱"},"PCB::洁美科技":{"2026-08-11":"强","2026-08-12":"弱","2026-08-13":"弱","2026-08-14":"弱","2026-08-17":"稳"},"PCB::科翔股份":{"2026-08-11":"强","2026-08-12":"稳","2026-08-13":"稳","2026-08-14":"稳","2026-08-17":"强"},"PCB::铜冠铜箔":{"2026-08-14":"稳","2026-08-11":"稳","2026-08-12":"稳","2026-08-13":"稳","2026-08-17":"强"}},"markedDates":{"2026-08-13":"第一次大分歧","2026-08-18":"第二次分歧","2026-08-19":"退潮确认","2026-08-20":"第一次反弹"},"dailyNotes":{"2026-08-11":"","2026-08-17":"毕业照","2026-08-14":"接近尾声","2026-08-18":"风险远没有释放","2026-08-19":"不要抄底"},"dailyPredictions":{"2026-08-11":"","2026-08-14":"今日整体的市场氛围是偏强的，科技呈现一种该弱不弱然后到尾盘上翘的姿态，这种是比较不好的姿态。选择非主流题材，避免科技和创新药。选择日K线两日低吸法。","2026-08-17":"科技延续走强的趋势，连续强了两天，加上进入了震荡阶段，科技的风险升高，不适宜继续停留。粮食是第二次打出板块效应，引起关注在适当位置介入，电网有表现。均指向明天风险。押注防御板块，粮食、电力、军工，排除创新药。优先形态，从日K出发二日低吸。"},"marketPhases":{"2026-08-13":"震荡期","2026-08-05":"主升期","2026-08-07":"主升期","2026-08-10":"主升期","2026-08-06":"主升期","2026-08-18":"退潮期","2026-08-11":"震荡期","2026-08-12":"震荡期","2026-08-14":"震荡期","2026-08-17":"震荡期","2026-08-04":"主升期","2026-08-19":"退潮期","2026-08-20":"退潮期"},"phaseNotes":{"2026-08-04":"起气"},"charStyle":{},"marketStats":{},"oppPredict":{"row1":{},"row1Result":{},"row2":{},"row2Result":{}}}');
-            window._readonlyData = _rd;
-            // 覆盖 init 中的 loadState
-            var _origLoadState = window.loadState;
-            window.loadState = function() {
-                state = {
-                    themes: _rd.themes || [],
-                    data: _rd.data || {},
-                    stocks: _rd.stocks || {},
-                    holidays: _rd.holidays || [],
-                    marketAtm: _rd.marketAtm || {},
-                    stockData: _rd.stockData || {},
-                    markedDates: _rd.markedDates || {},
-                    dailyNotes: _rd.dailyNotes || {},
-                    dailyPredictions: _rd.dailyPredictions || {},
-                    marketPhases: _rd.marketPhases || {},
-                    phaseNotes: _rd.phaseNotes || {},
-                    charStyle: _rd.charStyle || {},
-                    marketStats: _rd.marketStats || {},
-                    oppPredict: _rd.oppPredict || {}
-                };
-            };
-            document.title = document.title + ' (只读版)';
-        })();
-        </script></body> 之前）
+        // 注入只读初始化脚本（在 </body> 之前）
         const readonlyInitScript = `<script>
         (function() {
             document.documentElement.classList.add('readonly-mode');
