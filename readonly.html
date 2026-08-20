@@ -2788,7 +2788,7 @@ async function deployReadOnlyLink() {
             .replace(/</g, '\\u003c').replace(/>/g, '\\u003e');
         
         // 注入只读CSS
-        const readonlyCSS = `<style>
+        const readonlyCSS = `\x3cstyle>
         .readonly-mode .btn, .readonly-mode button[onclick*="open"],
         .readonly-mode button[onclick*="add"], .readonly-mode button[onclick*="delete"],
         .readonly-mode button[onclick*="edit"], .readonly-mode button[onclick*="remove"],
@@ -2804,7 +2804,7 @@ async function deployReadOnlyLink() {
         .readonly-mode input[type="text"]:not([id="date-jump"]) { display:none !important; }
         .readonly-mode { cursor: default !important; }
         .readonly-mode .cell { cursor: default !important; }
-        </style>`;
+        \x3c/style>`;
         
         readonlyHTML = readonlyHTML.replace('<style>
 .readonly-mode .header-actions button:not(#exportReadOnlyBtn):not(#exportDataBtn),
@@ -2841,7 +2841,7 @@ async function deployReadOnlyLink() {
 </head>');
         
         // 注入只读初始化脚本（在 </body> 之前）
-        const readonlyInitScript = `<script>
+        const readonlyInitScript = `\x3cscript>
         (function() {
             document.documentElement.classList.add('readonly-mode');
             // 覆盖保存和编辑函数
