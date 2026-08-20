@@ -1269,6 +1269,27 @@ header h1 { font-size: 22px; color: #58a6ff; }
 .readonly-mode .sync-btn{display:none!important}
 .readonly-mode .bind-btn{display:none!important}
 
+
+/* v6: Disable all hover color/transform changes */
+.readonly-mode .cell:hover { transform: none !important; background: inherit !important; }
+.readonly-mode .cell-none:hover { background: #21262d !important; }
+.readonly-mode .cell-strong:hover { background: #da3633 !important; }
+.readonly-mode .cell-stable:hover { background: #1f6feb !important; }
+.readonly-mode .cell-weak:hover { background: #238636 !important; }
+.readonly-mode .btn:hover { background: #161b22 !important; border-color: #30363d !important; }
+.readonly-mode .btn-primary:hover { background: #1f6feb !important; }
+.readonly-mode .theme-item-header:hover { background: transparent !important; }
+.readonly-mode .theme-clickable:hover { background: transparent !important; }
+.readonly-mode .theme-clickable:hover .theme-label-sub { color: inherit !important; }
+.readonly-mode .detail-date-cell:hover { background: transparent !important; }
+.readonly-mode .daily-note-cell:hover { background: transparent !important; }
+.readonly-mode .char-style-cell:hover { background: transparent !important; }
+.readonly-mode .opp-predict-cell:hover { background: transparent !important; }
+.readonly-mode .market-stats-cell:hover { background: transparent !important; }
+.readonly-mode .tab-btn:hover { background: transparent !important; color: inherit !important; }
+.readonly-mode .calendar-day:hover { border-color: #30363d !important; }
+.readonly-mode .section-divider.collapsible:hover { background: transparent !important; }
+.readonly-mode .phase-indicator:hover { opacity: 1 !important; transform: none !important; }
 </style>
 <script>
 
@@ -3095,6 +3116,16 @@ init();
     setTimeout(hideManageUI, 300);
     setTimeout(hideManageUI, 1000);
     console.log('[readonly v5] UI fully interactive, only data persistence blocked');
+
+    // v6: Override ALL toggle/cycle functions to prevent color changes
+    window.toggleCell = function() {};
+    window.toggleMarketCell = function() {};
+    window.toggleStockCell = function() {};
+    window.cyclePhase = function() {};
+    window.cyclePhaseInGrid = function() {};
+    window.selectOppResult = function() {};
+    window.toggleCharStatus = function() {};
+    console.log('[readonly v6] All color-changing interactions disabled');
 })();
 
 </script>
