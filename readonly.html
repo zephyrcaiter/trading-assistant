@@ -1220,19 +1220,19 @@ header h1 { font-size: 22px; color: #58a6ff; }
 </div>
 
 <style>
-.readonly-badge{position:fixed;bottom:12px;right:12px;background:rgba(56,139,253,0.15);color:#58a6ff;padding:4px 12px;border-radius:12px;font-size:12px;pointer-events:none;z-index:9999;border:1px solid rgba(56,139,253,0.3);}
+.readonly-badge{position:fixed;bottom:12px;right:12px;background:rgba(56,139,253,0.15);color:#58a6ff;padding:4px 12px;border-radius:12px;font-size:12px;z-index:9999;border:1px solid rgba(56,139,253,0.3);}
 
-.readonly-mode .readonly-badge{position:fixed;top:10px;right:10px;background:#da3633;color:#fff;padding:4px 12px;border-radius:6px;font-size:12px;font-weight:600;z-index:9999;pointer-events:none}
-.readonly-mode input,.readonly-mode textarea,.readonly-mode select{pointer-events:none!important;opacity:.8}
-.readonly-mode button,.readonly-mode .btn{pointer-events:none!important;opacity:.5;cursor:default}
+.readonly-mode .readonly-badge{position:fixed;top:10px;right:10px;background:#da3633;color:#fff;padding:4px 12px;border-radius:6px;font-size:12px;font-weight:600;z-index:9999;}
+.readonly-mode input,.readonly-mode textarea,.readonly-mode select{opacity:.8}
+.readonly-mode button,.readonly-mode .btn{opacity:.5;cursor:default}
 .readonly-mode .add-theme-row,.readonly-mode .delete-btn,.readonly-mode .theme-stocks{display:none}
 .readonly-mode .cloud-sync-section,.readonly-mode .export-section{display:none}
 
 
 .readonly-mode .readonly-badge{display:none!important}
 .readonly-mode #ro-badge{position:fixed!important;top:8px!important;right:8px!important;background:#da3633!important;color:#fff!important;padding:4px 10px!important;border-radius:4px!important;font-size:12px!important;font-weight:600!important;z-index:99999!important;white-space:nowrap!important;line-height:1.5!important;display:block!important;width:auto!important;height:auto!important}
-.readonly-mode input,.readonly-mode textarea,.readonly-mode select{pointer-events:none!important;opacity:.8!important}
-.readonly-mode button,.readonly-mode .btn{pointer-events:none!important;opacity:.5!important;cursor:default!important}
+.readonly-mode input,.readonly-mode textarea,.readonly-mode select{opacity:.8!important}
+.readonly-mode button,.readonly-mode .btn{opacity:.5!important;cursor:default!important}
 .readonly-mode .add-theme-row,.readonly-mode .delete-btn,.readonly-mode .theme-stocks{display:none!important}
 .readonly-mode .cloud-sync-section,.readonly-mode .export-section{display:none!important}
 
@@ -1258,8 +1258,20 @@ header h1 { font-size: 22px; color: #58a6ff; }
 .readonly-mode .sync-btn{display:none!important}
 .readonly-mode .bind-btn{display:none!important}
 
+
+.readonly-mode .readonly-badge{display:none!important}
+#ro-badge{position:fixed;top:8px;right:8px;background:#da3633;color:#fff;padding:4px 10px;border-radius:4px;font-size:12px;font-weight:600;z-index:99999;white-space:nowrap}
+.readonly-mode .add-theme-row{display:none!important}
+.readonly-mode .delete-btn{display:none!important}
+.readonly-mode .cloud-sync-section{display:none!important}
+.readonly-mode .export-section{display:none!important}
+.readonly-mode .export-btn{display:none!important}
+.readonly-mode .sync-btn{display:none!important}
+.readonly-mode .bind-btn{display:none!important}
+
 </style>
 <script>
+
 
 
 
@@ -3040,6 +3052,7 @@ function removePhaseNote() {
 
 // ===== Start =====
 init();
+
 
 
 
