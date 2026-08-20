@@ -2683,7 +2683,7 @@ function exportData() {
     showToast('已导出');
 }
 
-async async function deployReadOnlyLink() {
+async function deployReadOnlyLink() {
     const token = getGhToken();
     if (!token) {
         showToast('请先绑定 GitHub 账号', true);
@@ -2700,50 +2700,70 @@ async async function deployReadOnlyLink() {
         const srcResp = await fetch(`https://raw.githubusercontent.com/${GH_REPO}/main/index.html?t=${Date.now()}`);
         let readonlyHTML = await srcResp.text();
         
-        // 构建嵌入数据（使用 encodeURIComponent 编码避免标签冲突）
-        const stateStr = JSON.stringify(state);
+        // 构建嵌入数据
+        const stateJSON = JSON.stringify(state)
+            .replace(/\\/g, '\\\\').replace(/'/g, "\\'")
+            .replace(/</g, '\\u003c').replace(/>/g, '\\u003e');
         
-        // 注入只读CSS - 用字符串拼接避免 <style> 在模板中
-        var readonlyCSS = '<' + 'style>\n' +
-            '.readonly-mode .btn, .readonly-mode button[onclick*="open"],\n' +
-            '.readonly-mode button[onclick*="add"], .readonly-mode button[onclick*="delete"],\n' +
-            '.readonly-mode button[onclick*="edit"], .readonly-mode button[onclick*="remove"],\n' +
-            '.readonly-mode button[onclick*="bind"], .readonly-mode button[onclick*="deploy"],\n' +
-            '.readonly-mode button[onclick*="export"], .readonly-mode button[onclick*="import"],\n' +
-            '.readonly-mode button[onclick*="sync"], .readonly-mode button[onclick*="toggle"],\n' +
-            '.readonly-mode button[onclick*="save"], .readonly-mode button[onclick*="close"],\n' +
-            '.readonly-mode .add-btn, .readonly-mode .del-btn, .readonly-mode .edit-btn,\n' +
-            '.readonly-mode .lib-add-row, .readonly-mode .library-actions,\n' +
-            '.readonly-mode #holiday-btn, .readonly-mode .char-style-row button:last-child,\n' +
-            '.readonly-mode .note-input, .readonly-mode textarea,\n' +
-            '.readonly-mode #opp-modal textarea, .readonly-mode #opp-modal input,\n' +
-            '.readonly-mode input[type="text"]:not([id="date-jump"]) { display:none !important; }\n' +
-            '.readonly-mode { cursor: default !important; }\n' +
-            '.readonly-mode .cell { cursor: default !important; }\n' +
-            '</' + 'style>';
+        // 注入只读CSS
+        const readonlyCSS = `<style>
+        .readonly-mode .btn, .readonly-mode button[onclick*="open"],
+        .readonly-mode button[onclick*="add"], .readonly-mode button[onclick*="delete"],
+        .readonly-mode button[onclick*="edit"], .readonly-mode button[onclick*="remove"],
+        .readonly-mode button[onclick*="bind"], .readonly-mode button[onclick*="deploy"],
+        .readonly-mode button[onclick*="export"], .readonly-mode button[onclick*="import"],
+        .readonly-mode button[onclick*="sync"], .readonly-mode button[onclick*="toggle"],
+        .readonly-mode button[onclick*="save"], .readonly-mode button[onclick*="close"],
+        .readonly-mode .add-btn, .readonly-mode .del-btn, .readonly-mode .edit-btn,
+        .readonly-mode .lib-add-row, .readonly-mode .library-actions,
+        .readonly-mode #holiday-btn, .readonly-mode .char-style-row button:last-child,
+        .readonly-mode .note-input, .readonly-mode textarea,
+        .readonly-mode #opp-modal textarea, .readonly-mode #opp-modal input,
+        .readonly-mode input[type="text"]:not([id="date-jump"]) { display:none !important; }
+        .readonly-mode { cursor: default !important; }
+        .readonly-mode .cell { cursor: default !important; }
+        </style>`;
         
-        readonlyHTML = readonlyHTML.replace('</' + 'head>', readonlyCSS + '</' + 'head>');
+        readonlyHTML = readonlyHTML.replace('</head>', readonlyCSS + '</head>');
         
-        // 注入只读初始化脚本（使用字符串拼接构造标签）
-        var readonlyInitScript = '<' + 'script>\n' +
-            '(function() {\n' +
-            '    document.documentElement.classList.add("readonly-mode");\n' +
-            '    window.saveState = function() {};\n' +
-            '    window.ghSaveData = function() { return Promise.resolve(false); };\n' +
-            '    window.bindGitHub = function() {};\n' +
-            '    window.deployReadOnlyLink = function() {};\n' +
-            '    window.syncFromCloud = function() {};\n' +
-            '    var _rd = JSON.parse(decodeURIComponent("' + encodeURIComponent(stateStr) + '"));\n' +
-            '    window._readonlyData = _rd;\n' +
-            '    var _origLoadState = window.loadState;\n' +
-            '    window.loadState = function() {\n' +
-            '        state = JSON.parse(JSON.stringify(_rd));\n' +
-            '    };\n' +
-            '    document.title = document.title + " (只读版)";\n' +
-            '})();\n' +
-            '</' + 'script>';
+        // 注入只读初始化脚本（在 </body> 之前）
+        const readonlyInitScript = `<script>
+        (function() {
+            document.documentElement.classList.add('readonly-mode');
+            // 覆盖保存和编辑函数
+            window.saveState = function() {};
+            window.ghSaveData = function() { return Promise.resolve(false); };
+            window.bindGitHub = function() {};
+            window.deployReadOnlyLink = function() {};
+            window.syncFromCloud = function() {};
+            // 覆盖数据初始化
+            var _rd = JSON.parse('${stateJSON}');
+            window._readonlyData = _rd;
+            // 覆盖 init 中的 loadState
+            var _origLoadState = window.loadState;
+            window.loadState = function() {
+                state = {
+                    themes: _rd.themes || [],
+                    data: _rd.data || {},
+                    stocks: _rd.stocks || {},
+                    holidays: _rd.holidays || [],
+                    marketAtm: _rd.marketAtm || {},
+                    stockData: _rd.stockData || {},
+                    markedDates: _rd.markedDates || {},
+                    dailyNotes: _rd.dailyNotes || {},
+                    dailyPredictions: _rd.dailyPredictions || {},
+                    marketPhases: _rd.marketPhases || {},
+                    phaseNotes: _rd.phaseNotes || {},
+                    charStyle: _rd.charStyle || {},
+                    marketStats: _rd.marketStats || {},
+                    oppPredict: _rd.oppPredict || {}
+                };
+            };
+            document.title = document.title + ' (只读版)';
+        })();
+        <\/script>`;
         
-        readonlyHTML = readonlyHTML.replace('</' + 'body>', readonlyInitScript + '</' + 'body>');
+        readonlyHTML = readonlyHTML.replace('</body>', readonlyInitScript + '</body>');
         
         // 上传到 GitHub
         let fileSha = '';
@@ -2787,7 +2807,6 @@ async async function deployReadOnlyLink() {
         console.error(e);
     }
 }
-
 
 // ===== GitHub Cloud Sync =====
 function getGhToken() {
