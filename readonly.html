@@ -1220,7 +1220,7 @@ header h1 { font-size: 22px; color: #58a6ff; }
 </div>
 
 <style>
-.readonly-badge { position:fixed;bottom:12px;right:12px;background:rgba(56,139,253,0.15);color:#58a6ff;padding:4px 12px;border-radius:12px;font-size:12px;pointer-events:none;z-index:9999;border:1px solid rgba(56,139,253,0.3); }
+.readonly-badge{position:fixed;bottom:12px;right:12px;background:rgba(56,139,253,0.15);color:#58a6ff;padding:4px 12px;border-radius:12px;font-size:12px;pointer-events:none;z-index:9999;border:1px solid rgba(56,139,253,0.3);}
 </style>
 <script>
 (function() {
@@ -2615,95 +2615,7 @@ function removeHoliday(date) {
 }
 
 // ===== Export Read-Only HTML =====
-function exportReadOnly() {
-    let html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
-
-    // 1. Inject readonly CSS before </head>
-    const readonlyCSS = `<style id="readonly-override">
-body.readonly-mode .header-actions,
-body.readonly-mode [onclick*="openLibraryModal"],
-body.readonly-mode [onclick*="openGuideModal"],
-body.readonly-mode .modal-overlay,
-body.readonly-mode #mark-dialog,
-body.readonly-mode .add-theme-row,
-body.readonly-mode .library-footer,
-body.readonly-mode .delete-btn,
-body.readonly-mode .stock-add-row,
-body.readonly-mode .x,
-body.readonly-mode .char-remove-btn,
-body.readonly-mode .phase-indicator {
-    display: none !important;
-}
-body.readonly-mode .cell { cursor: default !important; }
-body.readonly-mode .theme-item-name { cursor: default !important; }
-body.readonly-mode [onclick*="openMarkDialog"],
-body.readonly-mode [onclick*="openNoteModal"],
-body.readonly-mode [onclick*="openCharStyleModal"],
-body.readonly-mode [onclick*="openMarketStatsModal"],
-body.readonly-mode [onclick*="openOppModal"],
-body.readonly-mode [onclick*="toggleMarketCell"],
-body.readonly-mode [onclick*="cyclePhaseInGrid"],
-body.readonly-mode [onclick*="toggleCharStatus"],
-body.readonly-mode [onclick*="editThemeName"],
-body.readonly-mode [onclick*="deleteTheme"],
-body.readonly-mode [onclick*="deleteStock"],
-body.readonly-mode [onclick*="addStock"],
-body.readonly-mode [onclick*="selectOppResult"],
-body.readonly-mode [onclick*="addGuideArticle"],
-body.readonly-mode [onclick*="deleteGuideArticle"],
-body.readonly-mode [onclick*="toggleGuideArticle"] {
-    pointer-events: none !important;
-}
-</style>`;
-    html = html.replace('</head>', readonlyCSS + '\n</head>');
-
-    // 2. Embed current state data
-    const stateJSON = JSON.stringify(state).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/</g, '\\u003c').replace(/>/g, '\\u003e');
-    const guideJSON = (localStorage.getItem('tradingGuideArticles') || '[]').replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/</g, '\\u003c').replace(/>/g, '\\u003e');
-
-    const readonlyInit = `
-// ===== Read-Only Mode: Embedded Data =====
-(function() {
-    var _embeddedState = JSON.parse('${stateJSON}');
-    var _embeddedGuide = JSON.parse('${guideJSON}');
-    Object.assign(state, _embeddedState);
-    guideArticles = _embeddedGuide;
-    windowEndDate = getRecentTradingDay();
-    renderGrid();
-    document.body.classList.add('readonly-mode');
-    document.title = document.title + ' (只读版)';
-})();
-`;
-    // Replace init() call (use function to avoid $& replacement issues)
-    html = html.replace('// ===== Start =====\ninit();', () => '// ===== Start (Read-Only) =====\n' + readonlyInit);
-
-    // 3. Download
-    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = '交易助手_只读版_' + formatDate(new Date()) + '.html';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    showToast('已导出只读版，可分享给他人查看');
-}
-
-// ===== Import/Export =====
-function exportData() {
-    if (state.themes.length === 0) { showToast('无数据可导出', true); return; }
-    const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `题材强度_${formatDate(new Date())}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-    showToast('已导出');
-}
-
-async // ===== GitHub Cloud Sync =====
+// ===== GitHub Cloud Sync =====
 function getGhToken() {
     return localStorage.getItem(GH_TOKEN_KEY) || '';
 }
@@ -3104,3 +3016,7 @@ function removePhaseNote() {
 
 // ===== Start =====
 init();
+</script>
+</body>
+</html>
+
