@@ -1,4 +1,6 @@
-<html lang="zh-CN"><head>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
@@ -1024,20 +1026,35 @@ header h1 { font-size: 22px; color: #58a6ff; }
 }
 </style>
 <style>
-        .readonly-mode .btn, .readonly-mode button[onclick*="open"], 
-        .readonly-mode button[onclick*="add"], .readonly-mode button[onclick*="delete"],
-        .readonly-mode button[onclick*="edit"], .readonly-mode button[onclick*="remove"],
-        .readonly-mode button[onclick*="bind"], .readonly-mode button[onclick*="deploy"],
-        .readonly-mode button[onclick*="export"], .readonly-mode button[onclick*="import"],
-        .readonly-mode button[onclick*="sync"], .readonly-mode button[onclick*="close"],
-        .readonly-mode button[onclick*="save"], .readonly-mode button[onclick*="toggle"],
-        .readonly-mode .add-btn, .readonly-mode .del-btn, .readonly-mode .edit-btn,
-        .readonly-mode .lib-add-row, .readonly-mode .library-actions,
-        .readonly-mode #holiday-btn, .readonly-mode .char-style-row button:last-child,
-        .readonly-mode .note-input, .readonly-mode textarea, .readonly-mode input[type="text"],
-        .readonly-mode #opp-modal textarea, .readonly-mode #opp-modal input { display:none !important; pointer-events:none !important; }
-        .readonly-mode { cursor: default; }
-        </style></head>
+.readonly-mode .btn, 
+.readonly-mode button[onclick*="open"],
+.readonly-mode button[onclick*="add"],
+.readonly-mode button[onclick*="delete"],
+.readonly-mode button[onclick*="edit"],
+.readonly-mode button[onclick*="remove"],
+.readonly-mode button[onclick*="bind"],
+.readonly-mode button[onclick*="deploy"],
+.readonly-mode button[onclick*="export"],
+.readonly-mode button[onclick*="import"],
+.readonly-mode button[onclick*="sync"],
+.readonly-mode button[onclick*="toggle"],
+.readonly-mode button[onclick*="save"],
+.readonly-mode button[onclick*="close"],
+.readonly-mode .add-btn,
+.readonly-mode .del-btn,
+.readonly-mode .edit-btn,
+.readonly-mode .lib-add-row,
+.readonly-mode .library-actions,
+.readonly-mode #holiday-btn,
+.readonly-mode .note-input,
+.readonly-mode textarea,
+.readonly-mode #opp-modal textarea,
+.readonly-mode #opp-modal input,
+.readonly-mode input[type="text"]:not([id="date-jump"]) { display:none !important; }
+.readonly-mode { cursor: default !important; }
+.readonly-mode .cell { cursor: default !important; }
+</style>
+</head>
 <body>
 <div class="container">
     <header>
@@ -1062,7 +1079,7 @@ header h1 { font-size: 22px; color: #58a6ff; }
             <div class="panel-title"></div>
             <div class="date-nav">
                 <button class="btn btn-sm" onclick="shiftWindow(-1)">◄ 上一天</button>
-                <span class="date-range" id="date-range-text">8/14 ~ 8/20</span>
+                <span class="date-range" id="date-range-text"></span>
                 <button class="btn btn-sm" onclick="shiftWindow(1)">下一天 ►</button>
                 <button class="btn btn-sm" onclick="jumpToToday()">今日</button>
                 <div class="date-jump">
@@ -1070,7 +1087,7 @@ header h1 { font-size: 22px; color: #58a6ff; }
                 </div>
                 <button class="btn btn-sm" onclick="openMonthView()" title="查看月度周期日历">📅 月度视图</button>
             </div>
-            <div id="viz-content"><div class="grid-wrap"><div class="grid-container"><div class="grid-header"><div></div><div class="" style="cursor:pointer" onclick="openMarkDialog('2026-08-14')" title="点击标注关键日">8/14<br><span style="font-size:10px;color:#6e7681">周五</span><div class="phase-indicator zhendang" onclick="event.stopPropagation();cyclePhaseInGrid('2026-08-14')" title="点击切换周期">震荡期</div></div><div class="" style="cursor:pointer" onclick="openMarkDialog('2026-08-17')" title="点击标注关键日">8/17<br><span style="font-size:10px;color:#6e7681">周一</span><div class="phase-indicator zhendang" onclick="event.stopPropagation();cyclePhaseInGrid('2026-08-17')" title="点击切换周期">震荡期</div></div><div class=" marked-col-head" style="cursor:pointer" onclick="openMarkDialog('2026-08-18')" title="点击标注关键日">8/18<br><span style="font-size:10px;color:#6e7681">周二</span><div class="mark-label">第二次分歧</div><div class="phase-indicator tuichao" onclick="event.stopPropagation();cyclePhaseInGrid('2026-08-18')" title="点击切换周期">退潮期</div></div><div class=" marked-col-head" style="cursor:pointer" onclick="openMarkDialog('2026-08-19')" title="点击标注关键日">8/19<br><span style="font-size:10px;color:#6e7681">周三</span><div class="mark-label">退潮确认</div><div class="phase-indicator tuichao" onclick="event.stopPropagation();cyclePhaseInGrid('2026-08-19')" title="点击切换周期">退潮期</div></div><div class=" today-col marked-col-head" style="cursor:pointer" onclick="openMarkDialog('2026-08-20')" title="点击标注关键日">8/20<br><span style="font-size:10px;color:#6e7681">周四</span><div class="mark-label">第一次反弹</div><div class="phase-indicator tuichao" onclick="event.stopPropagation();cyclePhaseInGrid('2026-08-20')" title="点击切换周期">退潮期</div></div><div>趋势</div></div><div class="section-divider"><span>📝 每日记录</span></div><div class="grid-row"><div class="theme-label"><div class="theme-label-name" style="color:#e3b341">记录</div></div><div class="cell cell-none daily-note-cell" onclick="openNoteModal('2026-08-14')" title="接近尾声">接近尾声</div><div class="cell cell-none daily-note-cell" onclick="openNoteModal('2026-08-17')" title="毕业照">毕业照</div><div class="cell cell-none marked-cell daily-note-cell" onclick="openNoteModal('2026-08-18')" title="风险远没有释放">风险远没有释放</div><div class="cell cell-none marked-cell daily-note-cell" onclick="openNoteModal('2026-08-19')" title="不要抄底">不要抄底</div><div class="cell cell-none cell-today marked-cell daily-note-cell daily-note-empty" onclick="openNoteModal('2026-08-20')" title=""><span style="color:#484f58">-</span></div><div class="trend-icon"></div></div><div class="section-divider"><span>🎭 特征风格</span></div><div class="grid-row"><div class="theme-label"><div class="theme-label-name" style="color:#e3b341">管中窥豹</div></div><div class="cell cell-none char-style-cell daily-note-empty" onclick="openCharStyleModal('2026-08-14')"><span style="color:#484f58">-</span></div><div class="cell cell-none char-style-cell daily-note-empty" onclick="openCharStyleModal('2026-08-17')"><span style="color:#484f58">-</span></div><div class="cell cell-none marked-cell char-style-cell daily-note-empty" onclick="openCharStyleModal('2026-08-18')"><span style="color:#484f58">-</span></div><div class="cell cell-none marked-cell char-style-cell daily-note-empty" onclick="openCharStyleModal('2026-08-19')"><span style="color:#484f58">-</span></div><div class="cell cell-none cell-today marked-cell char-style-cell daily-note-empty" onclick="openCharStyleModal('2026-08-20')"><span style="color:#484f58">-</span></div><div class="trend-icon"></div></div><div class="section-divider"><span>🌐 市场氛围</span></div><div class="grid-row atm-row"><div class="theme-label"><div class="theme-label-name" style="color:#e3b341">整体氛围</div></div><div class="cell cell-stable" onclick="toggleMarketCell('2026-08-14')">稳</div><div class="cell cell-strong" onclick="toggleMarketCell('2026-08-17')">强</div><div class="cell cell-weak marked-cell" onclick="toggleMarketCell('2026-08-18')">弱</div><div class="cell cell-weak marked-cell" onclick="toggleMarketCell('2026-08-19')">弱</div><div class="cell cell-strong cell-today marked-cell" onclick="toggleMarketCell('2026-08-20')">强</div><div class="trend-icon">⚡</div></div><div class="grid-row atm-row"><div class="theme-label"><div class="theme-label-name" style="color:#e3b341;font-size:10px">涨跌统计</div></div><div class="cell cell-none market-stats-cell" onclick="openMarketStatsModal('2026-08-14')"><span style="color:#484f58">-</span></div><div class="cell cell-none market-stats-cell" onclick="openMarketStatsModal('2026-08-17')"><span style="color:#484f58">-</span></div><div class="cell cell-none marked-cell market-stats-cell" onclick="openMarketStatsModal('2026-08-18')"><span style="color:#484f58">-</span></div><div class="cell cell-none marked-cell market-stats-cell" onclick="openMarketStatsModal('2026-08-19')"><span style="color:#484f58">-</span></div><div class="cell cell-none cell-today marked-cell market-stats-cell" onclick="openMarketStatsModal('2026-08-20')"><span style="color:#484f58">-</span></div><div class="trend-icon"></div></div><div class="section-divider collapsible" onclick="toggleThemesCollapse()"><span class="collapse-arrow">▶</span><span>📚 题材强度（9）</span></div><div class="themes-body"><div class="grid-row"><div class="theme-label theme-clickable" onclick="openThemeDetail('PCB')" title="点击查看详情"><div class="theme-label-name">PCB</div><div class="theme-label-sub">4只个股 →</div></div><div class="cell cell-stable" onclick="toggleCell('PCB','2026-08-14')">稳</div><div class="cell cell-strong" onclick="toggleCell('PCB','2026-08-17')">强</div><div class="cell cell-weak marked-cell" onclick="toggleCell('PCB','2026-08-18')">弱</div><div class="cell cell-weak marked-cell" onclick="toggleCell('PCB','2026-08-19')">弱</div><div class="cell cell-stable cell-today marked-cell" onclick="toggleCell('PCB','2026-08-20')">稳</div><div class="trend-icon">⚡</div></div><div class="grid-row"><div class="theme-label theme-clickable" onclick="openThemeDetail('CPO')" title="点击查看详情"><div class="theme-label-name">CPO</div><div class="theme-label-sub">点击查看 →</div></div><div class="cell cell-stable" onclick="toggleCell('CPO','2026-08-14')">稳</div><div class="cell cell-strong" onclick="toggleCell('CPO','2026-08-17')">强</div><div class="cell cell-stable marked-cell" onclick="toggleCell('CPO','2026-08-18')">稳</div><div class="cell cell-weak marked-cell" onclick="toggleCell('CPO','2026-08-19')">弱</div><div class="cell cell-stable cell-today marked-cell" onclick="toggleCell('CPO','2026-08-20')">稳</div><div class="trend-icon">⚡</div></div><div class="grid-row"><div class="theme-label theme-clickable" onclick="openThemeDetail('创新药')" title="点击查看详情"><div class="theme-label-name">创新药</div><div class="theme-label-sub">4只个股 →</div></div><div class="cell cell-stable" onclick="toggleCell('创新药','2026-08-14')">稳</div><div class="cell cell-stable" onclick="toggleCell('创新药','2026-08-17')">稳</div><div class="cell cell-weak marked-cell" onclick="toggleCell('创新药','2026-08-18')">弱</div><div class="cell cell-weak marked-cell" onclick="toggleCell('创新药','2026-08-19')">弱</div><div class="cell cell-strong cell-today marked-cell" onclick="toggleCell('创新药','2026-08-20')">强</div><div class="trend-icon">⬇️</div></div><div class="grid-row"><div class="theme-label theme-clickable" onclick="openThemeDetail('抱团')" title="点击查看详情"><div class="theme-label-name">抱团</div><div class="theme-label-sub">4只个股 →</div></div><div class="cell cell-stable" onclick="toggleCell('抱团','2026-08-14')">稳</div><div class="cell cell-stable" onclick="toggleCell('抱团','2026-08-17')">稳</div><div class="cell cell-none marked-cell" onclick="toggleCell('抱团','2026-08-18')">-</div><div class="cell cell-none marked-cell" onclick="toggleCell('抱团','2026-08-19')">-</div><div class="cell cell-strong cell-today marked-cell" onclick="toggleCell('抱团','2026-08-20')">强</div><div class="trend-icon">⚡</div></div><div class="grid-row"><div class="theme-label theme-clickable" onclick="openThemeDetail('算力')" title="点击查看详情"><div class="theme-label-name">算力</div><div class="theme-label-sub">2只个股 →</div></div><div class="cell cell-stable" onclick="toggleCell('算力','2026-08-14')">稳</div><div class="cell cell-stable" onclick="toggleCell('算力','2026-08-17')">稳</div><div class="cell cell-weak marked-cell" onclick="toggleCell('算力','2026-08-18')">弱</div><div class="cell cell-weak marked-cell" onclick="toggleCell('算力','2026-08-19')">弱</div><div class="cell cell-stable cell-today marked-cell" onclick="toggleCell('算力','2026-08-20')">稳</div><div class="trend-icon">⚡</div></div><div class="grid-row"><div class="theme-label theme-clickable" onclick="openThemeDetail('半导体')" title="点击查看详情"><div class="theme-label-name">半导体</div><div class="theme-label-sub">点击查看 →</div></div><div class="cell cell-stable" onclick="toggleCell('半导体','2026-08-14')">稳</div><div class="cell cell-strong" onclick="toggleCell('半导体','2026-08-17')">强</div><div class="cell cell-weak marked-cell" onclick="toggleCell('半导体','2026-08-18')">弱</div><div class="cell cell-weak marked-cell" onclick="toggleCell('半导体','2026-08-19')">弱</div><div class="cell cell-stable cell-today marked-cell" onclick="toggleCell('半导体','2026-08-20')">稳</div><div class="trend-icon">⚡</div></div><div class="grid-row"><div class="theme-label theme-clickable" onclick="openThemeDetail('存储')" title="点击查看详情"><div class="theme-label-name">存储</div><div class="theme-label-sub">点击查看 →</div></div><div class="cell cell-stable" onclick="toggleCell('存储','2026-08-14')">稳</div><div class="cell cell-strong" onclick="toggleCell('存储','2026-08-17')">强</div><div class="cell cell-weak marked-cell" onclick="toggleCell('存储','2026-08-18')">弱</div><div class="cell cell-weak marked-cell" onclick="toggleCell('存储','2026-08-19')">弱</div><div class="cell cell-stable cell-today marked-cell" onclick="toggleCell('存储','2026-08-20')">稳</div><div class="trend-icon">⚡</div></div><div class="grid-row"><div class="theme-label theme-clickable" onclick="openThemeDetail('粮食')" title="点击查看详情"><div class="theme-label-name">粮食</div><div class="theme-label-sub">2只个股 →</div></div><div class="cell cell-none" onclick="toggleCell('粮食','2026-08-14')">-</div><div class="cell cell-strong" onclick="toggleCell('粮食','2026-08-17')">强</div><div class="cell cell-strong marked-cell" onclick="toggleCell('粮食','2026-08-18')">强</div><div class="cell cell-strong marked-cell" onclick="toggleCell('粮食','2026-08-19')">强</div><div class="cell cell-none cell-today marked-cell" onclick="toggleCell('粮食','2026-08-20')">-</div><div class="trend-icon">⬆️</div></div><div class="grid-row"><div class="theme-label theme-clickable" onclick="openThemeDetail('MLCC')" title="点击查看详情"><div class="theme-label-name">MLCC</div><div class="theme-label-sub">2只个股 →</div></div><div class="cell cell-none" onclick="toggleCell('MLCC','2026-08-14')">-</div><div class="cell cell-none" onclick="toggleCell('MLCC','2026-08-17')">-</div><div class="cell cell-weak marked-cell" onclick="toggleCell('MLCC','2026-08-18')">弱</div><div class="cell cell-weak marked-cell" onclick="toggleCell('MLCC','2026-08-19')">弱</div><div class="cell cell-stable cell-today marked-cell" onclick="toggleCell('MLCC','2026-08-20')">稳</div><div class="trend-icon">⚡</div></div></div></div></div><div class="section-divider"><span>🎯 机会预测</span></div><div class="grid-row atm-row"><div class="theme-label" style="visibility:hidden"><div class="theme-label-name" style="font-size:10px">.</div></div><div class="cell cell-none opp-pair-left opp-predict-cell" onclick="openOppModal('row1','2026-08-14','predict')"><span style="color:#484f58">预测</span></div><div class="cell cell-none opp-pair-right opp-predict-cell" onclick="openOppModal('row1','2026-08-17','result')"><span style="color:#484f58">验证</span></div><div class="cell cell-none marked-cell opp-pair-left opp-predict-cell" onclick="openOppModal('row1','2026-08-18','predict')"><span style="color:#484f58">预测</span></div><div class="cell cell-none marked-cell opp-pair-right opp-predict-cell" onclick="openOppModal('row1','2026-08-19','result')"><span style="color:#484f58">验证</span></div><div class="cell cell-none cell-today marked-cell opp-pair-left opp-predict-cell" onclick="openOppModal('row1','2026-08-20','predict')"><span style="color:#484f58">预测</span></div><div class="trend-icon"></div></div><div class="grid-row atm-row"><div class="theme-label" style="visibility:hidden"><div class="theme-label-name" style="font-size:10px">.</div></div><div class="cell cell-none opp-predict-cell"><span style="color:#484f58;font-size:10px">-</span></div><div class="cell cell-none opp-pair-left opp-predict-cell" onclick="openOppModal('row2','2026-08-17','predict')"><span style="color:#484f58">预测</span></div><div class="cell cell-none marked-cell opp-pair-right opp-predict-cell" onclick="openOppModal('row2','2026-08-18','result')"><span style="color:#484f58">验证</span></div><div class="cell cell-none marked-cell opp-pair-left opp-predict-cell" onclick="openOppModal('row2','2026-08-19','predict')"><span style="color:#484f58">预测</span></div><div class="cell cell-none cell-today marked-cell opp-pair-right opp-predict-cell" onclick="openOppModal('row2','2026-08-20','result')"><span style="color:#484f58">验证</span></div><div class="trend-icon"></div></div><div class="legend"><div class="legend-item"><div class="legend-dot strong"></div>强</div><div class="legend-item"><div class="legend-dot stable"></div>稳</div><div class="legend-item"><div class="legend-dot weak"></div>弱</div><div class="legend-item"><div class="legend-dot none"></div>无数据</div><div class="legend-item" style="margin-left:auto">⬆️走强 ⬇️走弱 ⚡翻转 ➡️稳定 ★新出</div></div><div class="click-hint">💡 点击格子切换：空 → 强 → 稳 → 弱 → 清除　|　点击日期表头标注关键日　|　点击题材名称进入详情</div></div>
+            <div id="viz-content"></div>
         </div>
     </div>
 </div>
@@ -1091,7 +1108,7 @@ header h1 { font-size: 22px; color: #58a6ff; }
     </div>
 </div>
 
-<div class="toast show" id="toast">正在生成只读链接...</div>
+<div class="toast" id="toast"></div>
 <div id="confirm-dialog"></div>
 
 <!-- Mark Date Modal -->
@@ -1099,7 +1116,9 @@ header h1 { font-size: 22px; color: #58a6ff; }
     <div class="modal-box">
         <h3>📌 标注关键日</h3>
         <p class="modal-hint" id="mark-date-display"></p>
-        <input type="text" id="mark-label-input" placeholder="输入标注名称（如：大爆发、恐慌日）" maxlength="20" style="width:100%;padding:8px 10px;background:#0d1117;border:1px solid #30363d;border-radius:6px;color:#e6edf3;font-size:13px;margin-bottom:16px;outline:none" onkeydown="if(event.key==='Enter')saveMarkDate()">
+        <input type="text" id="mark-label-input" placeholder="输入标注名称（如：大爆发、恐慌日）" maxlength="20"
+               style="width:100%;padding:8px 10px;background:#0d1117;border:1px solid #30363d;border-radius:6px;color:#e6edf3;font-size:13px;margin-bottom:16px;outline:none"
+               onkeydown="if(event.key==='Enter')saveMarkDate()">
         <div style="display:flex;gap:8px;justify-content:flex-end">
             <button class="btn btn-danger btn-sm" id="mark-remove-btn" onclick="removeMarkDate()" style="display:none">取消标注</button>
             <button class="btn btn-primary btn-sm" onclick="saveMarkDate()">保存</button>
@@ -1113,8 +1132,10 @@ header h1 { font-size: 22px; color: #58a6ff; }
     <div class="modal-box">
         <h3>📝 每日记录</h3>
         <p class="modal-hint" id="note-date-display"></p>
-        <input type="text" id="note-title-input" placeholder="题目（简短标题，显示在格子中）" maxlength="30" style="width:100%;padding:8px 10px;background:#0d1117;border:1px solid #30363d;border-radius:6px;color:#e6edf3;font-size:13px;margin-bottom:10px;outline:none">
-        <textarea id="note-content-input" placeholder="正文（详细内容）" style="width:100%;min-height:120px;padding:8px 10px;background:#0d1117;border:1px solid #30363d;border-radius:6px;color:#e6edf3;font-size:13px;margin-bottom:16px;outline:none;resize:vertical;font-family:inherit"></textarea>
+        <input type="text" id="note-title-input" placeholder="题目（简短标题，显示在格子中）" maxlength="30"
+               style="width:100%;padding:8px 10px;background:#0d1117;border:1px solid #30363d;border-radius:6px;color:#e6edf3;font-size:13px;margin-bottom:10px;outline:none">
+        <textarea id="note-content-input" placeholder="正文（详细内容）"
+                  style="width:100%;min-height:120px;padding:8px 10px;background:#0d1117;border:1px solid #30363d;border-radius:6px;color:#e6edf3;font-size:13px;margin-bottom:16px;outline:none;resize:vertical;font-family:inherit"></textarea>
         <div style="display:flex;gap:8px;justify-content:flex-end">
             <button class="btn btn-danger btn-sm" id="note-remove-btn" onclick="removeNote()" style="display:none">删除</button>
             <button class="btn btn-primary btn-sm" onclick="saveNote()">保存</button>
@@ -1200,106 +1221,7 @@ header h1 { font-size: 22px; color: #58a6ff; }
                 <input type="text" id="new-theme-name" placeholder="输入题材名称" maxlength="12" onkeydown="if(event.key==='Enter')addTheme()">
                 <button class="btn btn-primary btn-sm" onclick="addTheme()">添加</button>
             </div>
-            <div id="theme-list" class="theme-list">
-            <div class="theme-item ">
-                <div class="theme-item-header" onclick="toggleThemeExpand('PCB')">
-                    <span class="theme-arrow">▶</span>
-                    <span class="theme-item-name" title="PCB" ondblclick="event.stopPropagation();editThemeName('PCB', this)">PCB</span>
-                    <span class="theme-stock-count">4只</span>
-                    <span class="theme-item-count">13天</span>
-                    <button class="delete-btn" onclick="event.stopPropagation();deleteTheme('PCB')">×</button>
-                </div>
-                
-            </div>
-        
-            <div class="theme-item ">
-                <div class="theme-item-header" onclick="toggleThemeExpand('CPO')">
-                    <span class="theme-arrow">▶</span>
-                    <span class="theme-item-name" title="CPO" ondblclick="event.stopPropagation();editThemeName('CPO', this)">CPO</span>
-                    
-                    <span class="theme-item-count">13天</span>
-                    <button class="delete-btn" onclick="event.stopPropagation();deleteTheme('CPO')">×</button>
-                </div>
-                
-            </div>
-        
-            <div class="theme-item ">
-                <div class="theme-item-header" onclick="toggleThemeExpand('创新药')">
-                    <span class="theme-arrow">▶</span>
-                    <span class="theme-item-name" title="创新药" ondblclick="event.stopPropagation();editThemeName('创新药', this)">创新药</span>
-                    <span class="theme-stock-count">4只</span>
-                    <span class="theme-item-count">14天</span>
-                    <button class="delete-btn" onclick="event.stopPropagation();deleteTheme('创新药')">×</button>
-                </div>
-                
-            </div>
-        
-            <div class="theme-item ">
-                <div class="theme-item-header" onclick="toggleThemeExpand('抱团')">
-                    <span class="theme-arrow">▶</span>
-                    <span class="theme-item-name" title="抱团" ondblclick="event.stopPropagation();editThemeName('抱团', this)">抱团</span>
-                    <span class="theme-stock-count">4只</span>
-                    <span class="theme-item-count">6天</span>
-                    <button class="delete-btn" onclick="event.stopPropagation();deleteTheme('抱团')">×</button>
-                </div>
-                
-            </div>
-        
-            <div class="theme-item ">
-                <div class="theme-item-header" onclick="toggleThemeExpand('算力')">
-                    <span class="theme-arrow">▶</span>
-                    <span class="theme-item-name" title="算力" ondblclick="event.stopPropagation();editThemeName('算力', this)">算力</span>
-                    <span class="theme-stock-count">2只</span>
-                    <span class="theme-item-count">8天</span>
-                    <button class="delete-btn" onclick="event.stopPropagation();deleteTheme('算力')">×</button>
-                </div>
-                
-            </div>
-        
-            <div class="theme-item ">
-                <div class="theme-item-header" onclick="toggleThemeExpand('半导体')">
-                    <span class="theme-arrow">▶</span>
-                    <span class="theme-item-name" title="半导体" ondblclick="event.stopPropagation();editThemeName('半导体', this)">半导体</span>
-                    
-                    <span class="theme-item-count">8天</span>
-                    <button class="delete-btn" onclick="event.stopPropagation();deleteTheme('半导体')">×</button>
-                </div>
-                
-            </div>
-        
-            <div class="theme-item ">
-                <div class="theme-item-header" onclick="toggleThemeExpand('存储')">
-                    <span class="theme-arrow">▶</span>
-                    <span class="theme-item-name" title="存储" ondblclick="event.stopPropagation();editThemeName('存储', this)">存储</span>
-                    
-                    <span class="theme-item-count">8天</span>
-                    <button class="delete-btn" onclick="event.stopPropagation();deleteTheme('存储')">×</button>
-                </div>
-                
-            </div>
-        
-            <div class="theme-item ">
-                <div class="theme-item-header" onclick="toggleThemeExpand('粮食')">
-                    <span class="theme-arrow">▶</span>
-                    <span class="theme-item-name" title="粮食" ondblclick="event.stopPropagation();editThemeName('粮食', this)">粮食</span>
-                    <span class="theme-stock-count">2只</span>
-                    <span class="theme-item-count">3天</span>
-                    <button class="delete-btn" onclick="event.stopPropagation();deleteTheme('粮食')">×</button>
-                </div>
-                
-            </div>
-        
-            <div class="theme-item ">
-                <div class="theme-item-header" onclick="toggleThemeExpand('MLCC')">
-                    <span class="theme-arrow">▶</span>
-                    <span class="theme-item-name" title="MLCC" ondblclick="event.stopPropagation();editThemeName('MLCC', this)">MLCC</span>
-                    <span class="theme-stock-count">2只</span>
-                    <span class="theme-item-count">3天</span>
-                    <button class="delete-btn" onclick="event.stopPropagation();deleteTheme('MLCC')">×</button>
-                </div>
-                
-            </div>
-        </div>
+            <div id="theme-list" class="theme-list"></div>
         </div>
         <div class="library-modal-footer">
             <button class="btn btn-sm" onclick="openHolidayModal();closeLibraryModal()">🗓 节假日管理</button>
@@ -2705,7 +2627,36 @@ function removeHoliday(date) {
 function exportReadOnly() {
     let html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
 
-    // 1. Inject readonly CSS before </head>
+    // 1. Inject readonly CSS before <style>
+.readonly-mode .btn, 
+.readonly-mode button[onclick*="open"],
+.readonly-mode button[onclick*="add"],
+.readonly-mode button[onclick*="delete"],
+.readonly-mode button[onclick*="edit"],
+.readonly-mode button[onclick*="remove"],
+.readonly-mode button[onclick*="bind"],
+.readonly-mode button[onclick*="deploy"],
+.readonly-mode button[onclick*="export"],
+.readonly-mode button[onclick*="import"],
+.readonly-mode button[onclick*="sync"],
+.readonly-mode button[onclick*="toggle"],
+.readonly-mode button[onclick*="save"],
+.readonly-mode button[onclick*="close"],
+.readonly-mode .add-btn,
+.readonly-mode .del-btn,
+.readonly-mode .edit-btn,
+.readonly-mode .lib-add-row,
+.readonly-mode .library-actions,
+.readonly-mode #holiday-btn,
+.readonly-mode .note-input,
+.readonly-mode textarea,
+.readonly-mode #opp-modal textarea,
+.readonly-mode #opp-modal input,
+.readonly-mode input[type="text"]:not([id="date-jump"]) { display:none !important; }
+.readonly-mode { cursor: default !important; }
+.readonly-mode .cell { cursor: default !important; }
+</style>
+</head>
     const readonlyCSS = `<style id="readonly-override">
 body.readonly-mode .header-actions,
 body.readonly-mode [onclick*="openLibraryModal"],
@@ -2742,7 +2693,65 @@ body.readonly-mode [onclick*="toggleGuideArticle"] {
     pointer-events: none !important;
 }
 </style>`;
-    html = html.replace('</head>', readonlyCSS + '\n</head>');
+    html = html.replace('<style>
+.readonly-mode .btn, 
+.readonly-mode button[onclick*="open"],
+.readonly-mode button[onclick*="add"],
+.readonly-mode button[onclick*="delete"],
+.readonly-mode button[onclick*="edit"],
+.readonly-mode button[onclick*="remove"],
+.readonly-mode button[onclick*="bind"],
+.readonly-mode button[onclick*="deploy"],
+.readonly-mode button[onclick*="export"],
+.readonly-mode button[onclick*="import"],
+.readonly-mode button[onclick*="sync"],
+.readonly-mode button[onclick*="toggle"],
+.readonly-mode button[onclick*="save"],
+.readonly-mode button[onclick*="close"],
+.readonly-mode .add-btn,
+.readonly-mode .del-btn,
+.readonly-mode .edit-btn,
+.readonly-mode .lib-add-row,
+.readonly-mode .library-actions,
+.readonly-mode #holiday-btn,
+.readonly-mode .note-input,
+.readonly-mode textarea,
+.readonly-mode #opp-modal textarea,
+.readonly-mode #opp-modal input,
+.readonly-mode input[type="text"]:not([id="date-jump"]) { display:none !important; }
+.readonly-mode { cursor: default !important; }
+.readonly-mode .cell { cursor: default !important; }
+</style>
+</head>', readonlyCSS + '\n<style>
+.readonly-mode .btn, 
+.readonly-mode button[onclick*="open"],
+.readonly-mode button[onclick*="add"],
+.readonly-mode button[onclick*="delete"],
+.readonly-mode button[onclick*="edit"],
+.readonly-mode button[onclick*="remove"],
+.readonly-mode button[onclick*="bind"],
+.readonly-mode button[onclick*="deploy"],
+.readonly-mode button[onclick*="export"],
+.readonly-mode button[onclick*="import"],
+.readonly-mode button[onclick*="sync"],
+.readonly-mode button[onclick*="toggle"],
+.readonly-mode button[onclick*="save"],
+.readonly-mode button[onclick*="close"],
+.readonly-mode .add-btn,
+.readonly-mode .del-btn,
+.readonly-mode .edit-btn,
+.readonly-mode .lib-add-row,
+.readonly-mode .library-actions,
+.readonly-mode #holiday-btn,
+.readonly-mode .note-input,
+.readonly-mode textarea,
+.readonly-mode #opp-modal textarea,
+.readonly-mode #opp-modal input,
+.readonly-mode input[type="text"]:not([id="date-jump"]) { display:none !important; }
+.readonly-mode { cursor: default !important; }
+.readonly-mode .cell { cursor: default !important; }
+</style>
+</head>');
 
     // 2. Embed current state data
     const stateJSON = JSON.stringify(state).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/</g, '\\u003c').replace(/>/g, '\\u003e');
@@ -2803,57 +2812,224 @@ async function deployReadOnlyLink() {
     showToast('正在生成只读链接...');
     
     try {
-        // 获取当前页面的完整HTML
-        const currentHTML = document.documentElement.outerHTML;
+        // 获取原始HTML源码
+        const srcResp = await fetch(`https://raw.githubusercontent.com/${GH_REPO}/main/index.html?t=${Date.now()}`);
+        let readonlyHTML = await srcResp.text();
         
-        // 构建只读版HTML
-        // 移除脚本中的预填充和sync相关（只读版不需要）
-        // 注入只读CSS和覆盖初始化
+        // 构建嵌入数据
+        const stateJSON = JSON.stringify(state)
+            .replace(/\\/g, '\\\\').replace(/'/g, "\\'")
+            .replace(/</g, '\\u003c').replace(/>/g, '\\u003e');
+        
+        // 注入只读CSS
         const readonlyCSS = `<style>
-        .readonly-mode .btn, .readonly-mode button[onclick*="open"], 
+        .readonly-mode .btn, .readonly-mode button[onclick*="open"],
         .readonly-mode button[onclick*="add"], .readonly-mode button[onclick*="delete"],
         .readonly-mode button[onclick*="edit"], .readonly-mode button[onclick*="remove"],
         .readonly-mode button[onclick*="bind"], .readonly-mode button[onclick*="deploy"],
         .readonly-mode button[onclick*="export"], .readonly-mode button[onclick*="import"],
-        .readonly-mode button[onclick*="sync"], .readonly-mode button[onclick*="close"],
-        .readonly-mode button[onclick*="save"], .readonly-mode button[onclick*="toggle"],
+        .readonly-mode button[onclick*="sync"], .readonly-mode button[onclick*="toggle"],
+        .readonly-mode button[onclick*="save"], .readonly-mode button[onclick*="close"],
         .readonly-mode .add-btn, .readonly-mode .del-btn, .readonly-mode .edit-btn,
         .readonly-mode .lib-add-row, .readonly-mode .library-actions,
         .readonly-mode #holiday-btn, .readonly-mode .char-style-row button:last-child,
-        .readonly-mode .note-input, .readonly-mode textarea, .readonly-mode input[type="text"],
-        .readonly-mode #opp-modal textarea, .readonly-mode #opp-modal input { display:none !important; pointer-events:none !important; }
-        .readonly-mode { cursor: default; }
+        .readonly-mode .note-input, .readonly-mode textarea,
+        .readonly-mode #opp-modal textarea, .readonly-mode #opp-modal input,
+        .readonly-mode input[type="text"]:not([id="date-jump"]) { display:none !important; }
+        .readonly-mode { cursor: default !important; }
+        .readonly-mode .cell { cursor: default !important; }
         </style>`;
         
-        const readonlyScript = `<script>
-        // 只读版：用嵌入数据初始化
-        document.documentElement.classList.add('readonly-mode');
-        // 覆盖所有编辑函数为空操作
-        ['saveState','addTheme','deleteTheme','renameTheme','addStock','deleteStock',
-         'toggleCell','toggleStockCell','toggleMarketAtm','toggleMarketStats',
-         'bindGitHub','ghSaveData','deployReadOnlyLink'].forEach(fn => {
-            try { window[fn] = function(){}; } catch(e){}
-        });
-        document.title = document.title + ' (只读版)';
+        readonlyHTML = readonlyHTML.replace('<style>
+.readonly-mode .btn, 
+.readonly-mode button[onclick*="open"],
+.readonly-mode button[onclick*="add"],
+.readonly-mode button[onclick*="delete"],
+.readonly-mode button[onclick*="edit"],
+.readonly-mode button[onclick*="remove"],
+.readonly-mode button[onclick*="bind"],
+.readonly-mode button[onclick*="deploy"],
+.readonly-mode button[onclick*="export"],
+.readonly-mode button[onclick*="import"],
+.readonly-mode button[onclick*="sync"],
+.readonly-mode button[onclick*="toggle"],
+.readonly-mode button[onclick*="save"],
+.readonly-mode button[onclick*="close"],
+.readonly-mode .add-btn,
+.readonly-mode .del-btn,
+.readonly-mode .edit-btn,
+.readonly-mode .lib-add-row,
+.readonly-mode .library-actions,
+.readonly-mode #holiday-btn,
+.readonly-mode .note-input,
+.readonly-mode textarea,
+.readonly-mode #opp-modal textarea,
+.readonly-mode #opp-modal input,
+.readonly-mode input[type="text"]:not([id="date-jump"]) { display:none !important; }
+.readonly-mode { cursor: default !important; }
+.readonly-mode .cell { cursor: default !important; }
+</style>
+</head>', readonlyCSS + '<style>
+.readonly-mode .btn, 
+.readonly-mode button[onclick*="open"],
+.readonly-mode button[onclick*="add"],
+.readonly-mode button[onclick*="delete"],
+.readonly-mode button[onclick*="edit"],
+.readonly-mode button[onclick*="remove"],
+.readonly-mode button[onclick*="bind"],
+.readonly-mode button[onclick*="deploy"],
+.readonly-mode button[onclick*="export"],
+.readonly-mode button[onclick*="import"],
+.readonly-mode button[onclick*="sync"],
+.readonly-mode button[onclick*="toggle"],
+.readonly-mode button[onclick*="save"],
+.readonly-mode button[onclick*="close"],
+.readonly-mode .add-btn,
+.readonly-mode .del-btn,
+.readonly-mode .edit-btn,
+.readonly-mode .lib-add-row,
+.readonly-mode .library-actions,
+.readonly-mode #holiday-btn,
+.readonly-mode .note-input,
+.readonly-mode textarea,
+.readonly-mode #opp-modal textarea,
+.readonly-mode #opp-modal input,
+.readonly-mode input[type="text"]:not([id="date-jump"]) { display:none !important; }
+.readonly-mode { cursor: default !important; }
+.readonly-mode .cell { cursor: default !important; }
+</style>
+</head>');
+        
+        // 注入只读初始化脚本（在 <script>
+(function() {
+    document.documentElement.classList.add('readonly-mode');
+    window.saveState = function() {};
+    window.ghSaveData = function() { return Promise.resolve(false); };
+    window.bindGitHub = function() {};
+    window.deployReadOnlyLink = function() {};
+    window.syncFromCloud = function() {};
+    var _rd = JSON.parse('{"themes": ["PCB", "CPO", "创新药", "抱团", "算力", "半导体", "存储", "粮食", "MLCC"], "data": {"PCB": {"2026-08-04": "强", "2026-08-05": "强", "2026-08-06": "强", "2026-08-03": "弱", "2026-08-07": "强", "2026-08-11": "稳", "2026-08-13": "稳", "2026-08-14": "稳", "2026-08-17": "强", "2026-08-12": "稳", "2026-08-18": "弱", "2026-08-19": "弱", "2026-08-20": "稳"}, "CPO": {"2026-08-03": "弱", "2026-08-04": "强", "2026-08-05": "弱", "2026-08-06": "弱", "2026-08-07": "强", "2026-08-11": "稳", "2026-08-17": "强", "2026-08-14": "稳", "2026-08-13": "稳", "2026-08-12": "稳", "2026-08-18": "稳", "2026-08-19": "弱", "2026-08-20": "稳"}, "创新药": {"2026-08-03": "强", "2026-08-04": "弱", "2026-08-05": "弱", "2026-08-06": "强", "2026-08-07": "强", "2026-08-10": "强", "2026-08-11": "稳", "2026-08-17": "稳", "2026-08-14": "稳", "2026-08-12": "稳", "2026-08-13": "强", "2026-08-18": "弱", "2026-08-19": "弱", "2026-08-20": "强"}, "抱团": {"2026-08-13": "稳", "2026-08-12": "强", "2026-08-14": "稳", "2026-08-17": "稳", "2026-08-11": "强", "2026-08-20": "强"}, "算力": {"2026-08-11": "稳", "2026-08-12": "稳", "2026-08-13": "稳", "2026-08-14": "稳", "2026-08-17": "稳", "2026-08-18": "弱", "2026-08-19": "弱", "2026-08-20": "稳"}, "半导体": {"2026-08-11": "稳", "2026-08-12": "稳", "2026-08-13": "稳", "2026-08-14": "稳", "2026-08-17": "强", "2026-08-18": "弱", "2026-08-19": "弱", "2026-08-20": "稳"}, "存储": {"2026-08-17": "强", "2026-08-11": "稳", "2026-08-12": "稳", "2026-08-13": "稳", "2026-08-14": "稳", "2026-08-18": "弱", "2026-08-19": "弱", "2026-08-20": "稳"}, "粮食": {"2026-08-17": "强", "2026-08-18": "强", "2026-08-19": "强"}, "MLCC": {"2026-08-20": "稳", "2026-08-19": "弱", "2026-08-18": "弱"}}, "stocks": {"PCB": ["宝鼎科技", "铜冠铜箔", "洁美科技", "科翔股份"], "CPO": [], "创新药": ["哈药股份", "药明康德", "万邦医药", "百普赛斯"], "抱团": ["哈药股份", "立新能源", "一鸣食品", "艾艾精工"], "算力": ["协创数据", "宏景科技"], "半导体": [], "存储": [], "粮食": ["神龙种业", "金健米业"], "MLCC": ["风华高科", "三环集团"]}, "holidays": [], "marketAtm": {"2026-08-03": "弱", "2026-08-04": "强", "2026-08-05": "强", "2026-08-06": "强", "2026-08-11": "稳", "2026-08-17": "强", "2026-08-13": "弱", "2026-08-12": "稳", "2026-08-18": "弱", "2026-08-14": "稳", "2026-08-19": "弱", "2026-08-20": "强"}, "stockData": {"PCB::宝鼎科技": {"2026-08-13": "稳", "2026-08-11": "强", "2026-08-12": "强", "2026-08-14": "稳", "2026-08-17": "稳"}, "创新药::哈药股份": {"2026-08-05": "弱"}, "PCB::洁美科技": {"2026-08-11": "强", "2026-08-12": "弱", "2026-08-13": "弱", "2026-08-14": "弱", "2026-08-17": "稳"}, "PCB::科翔股份": {"2026-08-11": "强", "2026-08-12": "稳", "2026-08-13": "稳", "2026-08-14": "稳", "2026-08-17": "强"}, "PCB::铜冠铜箔": {"2026-08-14": "稳", "2026-08-11": "稳", "2026-08-12": "稳", "2026-08-13": "稳", "2026-08-17": "强"}}, "markedDates": {"2026-08-13": "第一次大分歧", "2026-08-18": "第二次分歧", "2026-08-19": "退潮确认", "2026-08-20": "第一次反弹"}, "dailyNotes": {"2026-08-11": "", "2026-08-17": "毕业照", "2026-08-14": "接近尾声", "2026-08-18": "风险远没有释放", "2026-08-19": "不要抄底"}, "dailyPredictions": {"2026-08-11": "", "2026-08-14": "今日整体的市场氛围是偏强的，科技呈现一种该弱不弱然后到尾盘上翘的姿态，这种是比较不好的姿态。选择非主流题材，避免科技和创新药。选择日K线两日低吸法。", "2026-08-17": "科技延续走强的趋势，连续强了两天，加上进入了震荡阶段，科技的风险升高，不适宜继续停留。粮食是第二次打出板块效应，引起关注在适当位置介入，电网有表现。均指向明天风险。押注防御板块，粮食、电力、军工，排除创新药。优先形态，从日K出发二日低吸。"}, "marketPhases": {"2026-08-13": "震荡期", "2026-08-05": "主升期", "2026-08-07": "主升期", "2026-08-10": "主升期", "2026-08-06": "主升期", "2026-08-18": "退潮期", "2026-08-11": "震荡期", "2026-08-12": "震荡期", "2026-08-14": "震荡期", "2026-08-17": "震荡期", "2026-08-04": "主升期", "2026-08-19": "退潮期", "2026-08-20": "退潮期"}, "phaseNotes": {"2026-08-04": "起气"}, "charStyle": {}, "marketStats": {}, "oppPredict": {"row1": {}, "row1Result": {}, "row2": {}, "row2Result": {}}}');
+    window.loadState = function() {
+        state = {
+            themes: _rd.themes || [],
+            data: _rd.data || {},
+            stocks: _rd.stocks || {},
+            holidays: _rd.holidays || [],
+            marketAtm: _rd.marketAtm || {},
+            stockData: _rd.stockData || {},
+            markedDates: _rd.markedDates || {},
+            dailyNotes: _rd.dailyNotes || {},
+            dailyPredictions: _rd.dailyPredictions || {},
+            marketPhases: _rd.marketPhases || {},
+            phaseNotes: _rd.phaseNotes || {},
+            charStyle: _rd.charStyle || {},
+            marketStats: _rd.marketStats || {},
+            oppPredict: _rd.oppPredict || {}
+        };
+    };
+    document.title = document.title + ' (只读版)';
+})();
+</script>
+</body> 之前）
+        const readonlyInitScript = `<script>
+        (function() {
+            document.documentElement.classList.add('readonly-mode');
+            // 覆盖保存和编辑函数
+            window.saveState = function() {};
+            window.ghSaveData = function() { return Promise.resolve(false); };
+            window.bindGitHub = function() {};
+            window.deployReadOnlyLink = function() {};
+            window.syncFromCloud = function() {};
+            // 覆盖数据初始化
+            var _rd = JSON.parse('${stateJSON}');
+            window._readonlyData = _rd;
+            // 覆盖 init 中的 loadState
+            var _origLoadState = window.loadState;
+            window.loadState = function() {
+                state = {
+                    themes: _rd.themes || [],
+                    data: _rd.data || {},
+                    stocks: _rd.stocks || {},
+                    holidays: _rd.holidays || [],
+                    marketAtm: _rd.marketAtm || {},
+                    stockData: _rd.stockData || {},
+                    markedDates: _rd.markedDates || {},
+                    dailyNotes: _rd.dailyNotes || {},
+                    dailyPredictions: _rd.dailyPredictions || {},
+                    marketPhases: _rd.marketPhases || {},
+                    phaseNotes: _rd.phaseNotes || {},
+                    charStyle: _rd.charStyle || {},
+                    marketStats: _rd.marketStats || {},
+                    oppPredict: _rd.oppPredict || {}
+                };
+            };
+            document.title = document.title + ' (只读版)';
+        })();
         <\/script>`;
         
-        // 在 </head> 前注入只读CSS
-        let readonlyHTML = currentHTML.replace('</head>', readonlyCSS + '</head>');
-        // 在 <script>
-        // 只读版：用嵌入数据初始化
-        document.documentElement.classList.add('readonly-mode');
-        // 覆盖所有编辑函数为空操作
-        ['saveState','addTheme','deleteTheme','renameTheme','addStock','deleteStock',
-         'toggleCell','toggleStockCell','toggleMarketAtm','toggleMarketStats',
-         'bindGitHub','ghSaveData','deployReadOnlyLink'].forEach(fn => {
-            try { window[fn] = function(){}; } catch(e){}
-        });
-        document.title = document.title + ' (只读版)';
-        </script></body> 前注入只读脚本
-        readonlyHTML = readonlyHTML.replace('</body>', readonlyScript + '</body>');
+        readonlyHTML = readonlyHTML.replace('<script>
+(function() {
+    document.documentElement.classList.add('readonly-mode');
+    window.saveState = function() {};
+    window.ghSaveData = function() { return Promise.resolve(false); };
+    window.bindGitHub = function() {};
+    window.deployReadOnlyLink = function() {};
+    window.syncFromCloud = function() {};
+    var _rd = JSON.parse('{"themes": ["PCB", "CPO", "创新药", "抱团", "算力", "半导体", "存储", "粮食", "MLCC"], "data": {"PCB": {"2026-08-04": "强", "2026-08-05": "强", "2026-08-06": "强", "2026-08-03": "弱", "2026-08-07": "强", "2026-08-11": "稳", "2026-08-13": "稳", "2026-08-14": "稳", "2026-08-17": "强", "2026-08-12": "稳", "2026-08-18": "弱", "2026-08-19": "弱", "2026-08-20": "稳"}, "CPO": {"2026-08-03": "弱", "2026-08-04": "强", "2026-08-05": "弱", "2026-08-06": "弱", "2026-08-07": "强", "2026-08-11": "稳", "2026-08-17": "强", "2026-08-14": "稳", "2026-08-13": "稳", "2026-08-12": "稳", "2026-08-18": "稳", "2026-08-19": "弱", "2026-08-20": "稳"}, "创新药": {"2026-08-03": "强", "2026-08-04": "弱", "2026-08-05": "弱", "2026-08-06": "强", "2026-08-07": "强", "2026-08-10": "强", "2026-08-11": "稳", "2026-08-17": "稳", "2026-08-14": "稳", "2026-08-12": "稳", "2026-08-13": "强", "2026-08-18": "弱", "2026-08-19": "弱", "2026-08-20": "强"}, "抱团": {"2026-08-13": "稳", "2026-08-12": "强", "2026-08-14": "稳", "2026-08-17": "稳", "2026-08-11": "强", "2026-08-20": "强"}, "算力": {"2026-08-11": "稳", "2026-08-12": "稳", "2026-08-13": "稳", "2026-08-14": "稳", "2026-08-17": "稳", "2026-08-18": "弱", "2026-08-19": "弱", "2026-08-20": "稳"}, "半导体": {"2026-08-11": "稳", "2026-08-12": "稳", "2026-08-13": "稳", "2026-08-14": "稳", "2026-08-17": "强", "2026-08-18": "弱", "2026-08-19": "弱", "2026-08-20": "稳"}, "存储": {"2026-08-17": "强", "2026-08-11": "稳", "2026-08-12": "稳", "2026-08-13": "稳", "2026-08-14": "稳", "2026-08-18": "弱", "2026-08-19": "弱", "2026-08-20": "稳"}, "粮食": {"2026-08-17": "强", "2026-08-18": "强", "2026-08-19": "强"}, "MLCC": {"2026-08-20": "稳", "2026-08-19": "弱", "2026-08-18": "弱"}}, "stocks": {"PCB": ["宝鼎科技", "铜冠铜箔", "洁美科技", "科翔股份"], "CPO": [], "创新药": ["哈药股份", "药明康德", "万邦医药", "百普赛斯"], "抱团": ["哈药股份", "立新能源", "一鸣食品", "艾艾精工"], "算力": ["协创数据", "宏景科技"], "半导体": [], "存储": [], "粮食": ["神龙种业", "金健米业"], "MLCC": ["风华高科", "三环集团"]}, "holidays": [], "marketAtm": {"2026-08-03": "弱", "2026-08-04": "强", "2026-08-05": "强", "2026-08-06": "强", "2026-08-11": "稳", "2026-08-17": "强", "2026-08-13": "弱", "2026-08-12": "稳", "2026-08-18": "弱", "2026-08-14": "稳", "2026-08-19": "弱", "2026-08-20": "强"}, "stockData": {"PCB::宝鼎科技": {"2026-08-13": "稳", "2026-08-11": "强", "2026-08-12": "强", "2026-08-14": "稳", "2026-08-17": "稳"}, "创新药::哈药股份": {"2026-08-05": "弱"}, "PCB::洁美科技": {"2026-08-11": "强", "2026-08-12": "弱", "2026-08-13": "弱", "2026-08-14": "弱", "2026-08-17": "稳"}, "PCB::科翔股份": {"2026-08-11": "强", "2026-08-12": "稳", "2026-08-13": "稳", "2026-08-14": "稳", "2026-08-17": "强"}, "PCB::铜冠铜箔": {"2026-08-14": "稳", "2026-08-11": "稳", "2026-08-12": "稳", "2026-08-13": "稳", "2026-08-17": "强"}}, "markedDates": {"2026-08-13": "第一次大分歧", "2026-08-18": "第二次分歧", "2026-08-19": "退潮确认", "2026-08-20": "第一次反弹"}, "dailyNotes": {"2026-08-11": "", "2026-08-17": "毕业照", "2026-08-14": "接近尾声", "2026-08-18": "风险远没有释放", "2026-08-19": "不要抄底"}, "dailyPredictions": {"2026-08-11": "", "2026-08-14": "今日整体的市场氛围是偏强的，科技呈现一种该弱不弱然后到尾盘上翘的姿态，这种是比较不好的姿态。选择非主流题材，避免科技和创新药。选择日K线两日低吸法。", "2026-08-17": "科技延续走强的趋势，连续强了两天，加上进入了震荡阶段，科技的风险升高，不适宜继续停留。粮食是第二次打出板块效应，引起关注在适当位置介入，电网有表现。均指向明天风险。押注防御板块，粮食、电力、军工，排除创新药。优先形态，从日K出发二日低吸。"}, "marketPhases": {"2026-08-13": "震荡期", "2026-08-05": "主升期", "2026-08-07": "主升期", "2026-08-10": "主升期", "2026-08-06": "主升期", "2026-08-18": "退潮期", "2026-08-11": "震荡期", "2026-08-12": "震荡期", "2026-08-14": "震荡期", "2026-08-17": "震荡期", "2026-08-04": "主升期", "2026-08-19": "退潮期", "2026-08-20": "退潮期"}, "phaseNotes": {"2026-08-04": "起气"}, "charStyle": {}, "marketStats": {}, "oppPredict": {"row1": {}, "row1Result": {}, "row2": {}, "row2Result": {}}}');
+    window.loadState = function() {
+        state = {
+            themes: _rd.themes || [],
+            data: _rd.data || {},
+            stocks: _rd.stocks || {},
+            holidays: _rd.holidays || [],
+            marketAtm: _rd.marketAtm || {},
+            stockData: _rd.stockData || {},
+            markedDates: _rd.markedDates || {},
+            dailyNotes: _rd.dailyNotes || {},
+            dailyPredictions: _rd.dailyPredictions || {},
+            marketPhases: _rd.marketPhases || {},
+            phaseNotes: _rd.phaseNotes || {},
+            charStyle: _rd.charStyle || {},
+            marketStats: _rd.marketStats || {},
+            oppPredict: _rd.oppPredict || {}
+        };
+    };
+    document.title = document.title + ' (只读版)';
+})();
+</script>
+</body>', readonlyInitScript + '<script>
+(function() {
+    document.documentElement.classList.add('readonly-mode');
+    window.saveState = function() {};
+    window.ghSaveData = function() { return Promise.resolve(false); };
+    window.bindGitHub = function() {};
+    window.deployReadOnlyLink = function() {};
+    window.syncFromCloud = function() {};
+    var _rd = JSON.parse('{"themes": ["PCB", "CPO", "创新药", "抱团", "算力", "半导体", "存储", "粮食", "MLCC"], "data": {"PCB": {"2026-08-04": "强", "2026-08-05": "强", "2026-08-06": "强", "2026-08-03": "弱", "2026-08-07": "强", "2026-08-11": "稳", "2026-08-13": "稳", "2026-08-14": "稳", "2026-08-17": "强", "2026-08-12": "稳", "2026-08-18": "弱", "2026-08-19": "弱", "2026-08-20": "稳"}, "CPO": {"2026-08-03": "弱", "2026-08-04": "强", "2026-08-05": "弱", "2026-08-06": "弱", "2026-08-07": "强", "2026-08-11": "稳", "2026-08-17": "强", "2026-08-14": "稳", "2026-08-13": "稳", "2026-08-12": "稳", "2026-08-18": "稳", "2026-08-19": "弱", "2026-08-20": "稳"}, "创新药": {"2026-08-03": "强", "2026-08-04": "弱", "2026-08-05": "弱", "2026-08-06": "强", "2026-08-07": "强", "2026-08-10": "强", "2026-08-11": "稳", "2026-08-17": "稳", "2026-08-14": "稳", "2026-08-12": "稳", "2026-08-13": "强", "2026-08-18": "弱", "2026-08-19": "弱", "2026-08-20": "强"}, "抱团": {"2026-08-13": "稳", "2026-08-12": "强", "2026-08-14": "稳", "2026-08-17": "稳", "2026-08-11": "强", "2026-08-20": "强"}, "算力": {"2026-08-11": "稳", "2026-08-12": "稳", "2026-08-13": "稳", "2026-08-14": "稳", "2026-08-17": "稳", "2026-08-18": "弱", "2026-08-19": "弱", "2026-08-20": "稳"}, "半导体": {"2026-08-11": "稳", "2026-08-12": "稳", "2026-08-13": "稳", "2026-08-14": "稳", "2026-08-17": "强", "2026-08-18": "弱", "2026-08-19": "弱", "2026-08-20": "稳"}, "存储": {"2026-08-17": "强", "2026-08-11": "稳", "2026-08-12": "稳", "2026-08-13": "稳", "2026-08-14": "稳", "2026-08-18": "弱", "2026-08-19": "弱", "2026-08-20": "稳"}, "粮食": {"2026-08-17": "强", "2026-08-18": "强", "2026-08-19": "强"}, "MLCC": {"2026-08-20": "稳", "2026-08-19": "弱", "2026-08-18": "弱"}}, "stocks": {"PCB": ["宝鼎科技", "铜冠铜箔", "洁美科技", "科翔股份"], "CPO": [], "创新药": ["哈药股份", "药明康德", "万邦医药", "百普赛斯"], "抱团": ["哈药股份", "立新能源", "一鸣食品", "艾艾精工"], "算力": ["协创数据", "宏景科技"], "半导体": [], "存储": [], "粮食": ["神龙种业", "金健米业"], "MLCC": ["风华高科", "三环集团"]}, "holidays": [], "marketAtm": {"2026-08-03": "弱", "2026-08-04": "强", "2026-08-05": "强", "2026-08-06": "强", "2026-08-11": "稳", "2026-08-17": "强", "2026-08-13": "弱", "2026-08-12": "稳", "2026-08-18": "弱", "2026-08-14": "稳", "2026-08-19": "弱", "2026-08-20": "强"}, "stockData": {"PCB::宝鼎科技": {"2026-08-13": "稳", "2026-08-11": "强", "2026-08-12": "强", "2026-08-14": "稳", "2026-08-17": "稳"}, "创新药::哈药股份": {"2026-08-05": "弱"}, "PCB::洁美科技": {"2026-08-11": "强", "2026-08-12": "弱", "2026-08-13": "弱", "2026-08-14": "弱", "2026-08-17": "稳"}, "PCB::科翔股份": {"2026-08-11": "强", "2026-08-12": "稳", "2026-08-13": "稳", "2026-08-14": "稳", "2026-08-17": "强"}, "PCB::铜冠铜箔": {"2026-08-14": "稳", "2026-08-11": "稳", "2026-08-12": "稳", "2026-08-13": "稳", "2026-08-17": "强"}}, "markedDates": {"2026-08-13": "第一次大分歧", "2026-08-18": "第二次分歧", "2026-08-19": "退潮确认", "2026-08-20": "第一次反弹"}, "dailyNotes": {"2026-08-11": "", "2026-08-17": "毕业照", "2026-08-14": "接近尾声", "2026-08-18": "风险远没有释放", "2026-08-19": "不要抄底"}, "dailyPredictions": {"2026-08-11": "", "2026-08-14": "今日整体的市场氛围是偏强的，科技呈现一种该弱不弱然后到尾盘上翘的姿态，这种是比较不好的姿态。选择非主流题材，避免科技和创新药。选择日K线两日低吸法。", "2026-08-17": "科技延续走强的趋势，连续强了两天，加上进入了震荡阶段，科技的风险升高，不适宜继续停留。粮食是第二次打出板块效应，引起关注在适当位置介入，电网有表现。均指向明天风险。押注防御板块，粮食、电力、军工，排除创新药。优先形态，从日K出发二日低吸。"}, "marketPhases": {"2026-08-13": "震荡期", "2026-08-05": "主升期", "2026-08-07": "主升期", "2026-08-10": "主升期", "2026-08-06": "主升期", "2026-08-18": "退潮期", "2026-08-11": "震荡期", "2026-08-12": "震荡期", "2026-08-14": "震荡期", "2026-08-17": "震荡期", "2026-08-04": "主升期", "2026-08-19": "退潮期", "2026-08-20": "退潮期"}, "phaseNotes": {"2026-08-04": "起气"}, "charStyle": {}, "marketStats": {}, "oppPredict": {"row1": {}, "row1Result": {}, "row2": {}, "row2Result": {}}}');
+    window.loadState = function() {
+        state = {
+            themes: _rd.themes || [],
+            data: _rd.data || {},
+            stocks: _rd.stocks || {},
+            holidays: _rd.holidays || [],
+            marketAtm: _rd.marketAtm || {},
+            stockData: _rd.stockData || {},
+            markedDates: _rd.markedDates || {},
+            dailyNotes: _rd.dailyNotes || {},
+            dailyPredictions: _rd.dailyPredictions || {},
+            marketPhases: _rd.marketPhases || {},
+            phaseNotes: _rd.phaseNotes || {},
+            charStyle: _rd.charStyle || {},
+            marketStats: _rd.marketStats || {},
+            oppPredict: _rd.oppPredict || {}
+        };
+    };
+    document.title = document.title + ' (只读版)';
+})();
+</script>
+</body>');
         
-        // 上传到 GitHub 仓库的 readonly.html
-        // 先获取文件SHA（如果已存在）
+        // 上传到 GitHub
         let fileSha = '';
         try {
             const metaResp = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/readonly.html`, {
@@ -2867,7 +3043,7 @@ async function deployReadOnlyLink() {
         
         const content = btoa(unescape(encodeURIComponent(readonlyHTML)));
         const body = {
-            message: `Update readonly version ${new Date().toLocaleString('zh-CN')}`,
+            message: `Update readonly ${new Date().toLocaleString('zh-CN')}`,
             content: content
         };
         if (fileSha) body.sha = fileSha;
@@ -2883,53 +3059,18 @@ async function deployReadOnlyLink() {
         
         if (saveResp.ok) {
             const link = `https://${GH_REPO.split('/')[0]}.github.io/${GH_REPO.split('/')[1]}/readonly.html`;
-            // 复制链接到剪贴板
             try { await navigator.clipboard.writeText(link); } catch(e) {}
-            showToast('只读链接已生成，已复制到剪贴板！');
-            setTimeout(() => alert('只读版链接已复制：\n\n' + link + '\n\n直接发给别人即可，对方只能看不能改。'), 500);
+            showToast('只读链接已生成并复制到剪贴板！');
+            setTimeout(() => alert('只读版链接已复制：\n\n' + link + '\n\n发给别人即可，对方只能看不能改。'), 500);
         } else {
             const err = await saveResp.json();
             showToast('部署失败：' + err.message, true);
         }
     } catch(e) {
         showToast('生成失败：' + e.message, true);
+        console.error(e);
     }
 }
-
-function importData(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        try {
-            const data = JSON.parse(e.target.result);
-            if (!data.themes) throw new Error('format');
-            state = {
-                themes: data.themes || [],
-                data: data.data || {},
-                stocks: data.stocks || {},
-                holidays: data.holidays || [],
-                marketAtm: data.marketAtm || {},
-                stockData: data.stockData || {},
-                markedDates: data.markedDates || {},
-                dailyNotes: data.dailyNotes || {},
-                dailyPredictions: data.dailyPredictions || {},
-                marketPhases: data.marketPhases || {},
-                phaseNotes: data.phaseNotes || {}
-            };
-            saveState();
-            windowEndDate = getRecentTradingDay();
-            renderLibrary();
-            renderGrid();
-            showToast('导入成功');
-        } catch(err) {
-            showToast('导入失败：文件格式错误', true);
-        }
-    };
-    reader.readAsText(file);
-    event.target.value = '';
-}
-
 
 // ===== GitHub Cloud Sync =====
 function getGhToken() {
@@ -3333,7 +3474,36 @@ function removePhaseNote() {
 // ===== Start =====
 init();
 </script>
+<script>
+(function() {
+    document.documentElement.classList.add('readonly-mode');
+    window.saveState = function() {};
+    window.ghSaveData = function() { return Promise.resolve(false); };
+    window.bindGitHub = function() {};
+    window.deployReadOnlyLink = function() {};
+    window.syncFromCloud = function() {};
+    var _rd = JSON.parse('{"themes": ["PCB", "CPO", "创新药", "抱团", "算力", "半导体", "存储", "粮食", "MLCC"], "data": {"PCB": {"2026-08-04": "强", "2026-08-05": "强", "2026-08-06": "强", "2026-08-03": "弱", "2026-08-07": "强", "2026-08-11": "稳", "2026-08-13": "稳", "2026-08-14": "稳", "2026-08-17": "强", "2026-08-12": "稳", "2026-08-18": "弱", "2026-08-19": "弱", "2026-08-20": "稳"}, "CPO": {"2026-08-03": "弱", "2026-08-04": "强", "2026-08-05": "弱", "2026-08-06": "弱", "2026-08-07": "强", "2026-08-11": "稳", "2026-08-17": "强", "2026-08-14": "稳", "2026-08-13": "稳", "2026-08-12": "稳", "2026-08-18": "稳", "2026-08-19": "弱", "2026-08-20": "稳"}, "创新药": {"2026-08-03": "强", "2026-08-04": "弱", "2026-08-05": "弱", "2026-08-06": "强", "2026-08-07": "强", "2026-08-10": "强", "2026-08-11": "稳", "2026-08-17": "稳", "2026-08-14": "稳", "2026-08-12": "稳", "2026-08-13": "强", "2026-08-18": "弱", "2026-08-19": "弱", "2026-08-20": "强"}, "抱团": {"2026-08-13": "稳", "2026-08-12": "强", "2026-08-14": "稳", "2026-08-17": "稳", "2026-08-11": "强", "2026-08-20": "强"}, "算力": {"2026-08-11": "稳", "2026-08-12": "稳", "2026-08-13": "稳", "2026-08-14": "稳", "2026-08-17": "稳", "2026-08-18": "弱", "2026-08-19": "弱", "2026-08-20": "稳"}, "半导体": {"2026-08-11": "稳", "2026-08-12": "稳", "2026-08-13": "稳", "2026-08-14": "稳", "2026-08-17": "强", "2026-08-18": "弱", "2026-08-19": "弱", "2026-08-20": "稳"}, "存储": {"2026-08-17": "强", "2026-08-11": "稳", "2026-08-12": "稳", "2026-08-13": "稳", "2026-08-14": "稳", "2026-08-18": "弱", "2026-08-19": "弱", "2026-08-20": "稳"}, "粮食": {"2026-08-17": "强", "2026-08-18": "强", "2026-08-19": "强"}, "MLCC": {"2026-08-20": "稳", "2026-08-19": "弱", "2026-08-18": "弱"}}, "stocks": {"PCB": ["宝鼎科技", "铜冠铜箔", "洁美科技", "科翔股份"], "CPO": [], "创新药": ["哈药股份", "药明康德", "万邦医药", "百普赛斯"], "抱团": ["哈药股份", "立新能源", "一鸣食品", "艾艾精工"], "算力": ["协创数据", "宏景科技"], "半导体": [], "存储": [], "粮食": ["神龙种业", "金健米业"], "MLCC": ["风华高科", "三环集团"]}, "holidays": [], "marketAtm": {"2026-08-03": "弱", "2026-08-04": "强", "2026-08-05": "强", "2026-08-06": "强", "2026-08-11": "稳", "2026-08-17": "强", "2026-08-13": "弱", "2026-08-12": "稳", "2026-08-18": "弱", "2026-08-14": "稳", "2026-08-19": "弱", "2026-08-20": "强"}, "stockData": {"PCB::宝鼎科技": {"2026-08-13": "稳", "2026-08-11": "强", "2026-08-12": "强", "2026-08-14": "稳", "2026-08-17": "稳"}, "创新药::哈药股份": {"2026-08-05": "弱"}, "PCB::洁美科技": {"2026-08-11": "强", "2026-08-12": "弱", "2026-08-13": "弱", "2026-08-14": "弱", "2026-08-17": "稳"}, "PCB::科翔股份": {"2026-08-11": "强", "2026-08-12": "稳", "2026-08-13": "稳", "2026-08-14": "稳", "2026-08-17": "强"}, "PCB::铜冠铜箔": {"2026-08-14": "稳", "2026-08-11": "稳", "2026-08-12": "稳", "2026-08-13": "稳", "2026-08-17": "强"}}, "markedDates": {"2026-08-13": "第一次大分歧", "2026-08-18": "第二次分歧", "2026-08-19": "退潮确认", "2026-08-20": "第一次反弹"}, "dailyNotes": {"2026-08-11": "", "2026-08-17": "毕业照", "2026-08-14": "接近尾声", "2026-08-18": "风险远没有释放", "2026-08-19": "不要抄底"}, "dailyPredictions": {"2026-08-11": "", "2026-08-14": "今日整体的市场氛围是偏强的，科技呈现一种该弱不弱然后到尾盘上翘的姿态，这种是比较不好的姿态。选择非主流题材，避免科技和创新药。选择日K线两日低吸法。", "2026-08-17": "科技延续走强的趋势，连续强了两天，加上进入了震荡阶段，科技的风险升高，不适宜继续停留。粮食是第二次打出板块效应，引起关注在适当位置介入，电网有表现。均指向明天风险。押注防御板块，粮食、电力、军工，排除创新药。优先形态，从日K出发二日低吸。"}, "marketPhases": {"2026-08-13": "震荡期", "2026-08-05": "主升期", "2026-08-07": "主升期", "2026-08-10": "主升期", "2026-08-06": "主升期", "2026-08-18": "退潮期", "2026-08-11": "震荡期", "2026-08-12": "震荡期", "2026-08-14": "震荡期", "2026-08-17": "震荡期", "2026-08-04": "主升期", "2026-08-19": "退潮期", "2026-08-20": "退潮期"}, "phaseNotes": {"2026-08-04": "起气"}, "charStyle": {}, "marketStats": {}, "oppPredict": {"row1": {}, "row1Result": {}, "row2": {}, "row2Result": {}}}');
+    window.loadState = function() {
+        state = {
+            themes: _rd.themes || [],
+            data: _rd.data || {},
+            stocks: _rd.stocks || {},
+            holidays: _rd.holidays || [],
+            marketAtm: _rd.marketAtm || {},
+            stockData: _rd.stockData || {},
+            markedDates: _rd.markedDates || {},
+            dailyNotes: _rd.dailyNotes || {},
+            dailyPredictions: _rd.dailyPredictions || {},
+            marketPhases: _rd.marketPhases || {},
+            phaseNotes: _rd.phaseNotes || {},
+            charStyle: _rd.charStyle || {},
+            marketStats: _rd.marketStats || {},
+            oppPredict: _rd.oppPredict || {}
+        };
+    };
+    document.title = document.title + ' (只读版)';
+})();
+</script>
+</body>
+</html>
 
-
-
-</body></html>
