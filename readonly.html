@@ -1269,6 +1269,24 @@ header h1 { font-size: 22px; color: #58a6ff; }
 .readonly-mode .sync-btn{display:none!important}
 .readonly-mode .bind-btn{display:none!important}
 
+
+/* v6.1: Hide all modal save/remove/add buttons in readonly mode */
+.readonly-mode .modal button[onclick*="save"],
+.readonly-mode .modal button[onclick*="Save"],
+.readonly-mode .modal button[onclick*="remove"],
+.readonly-mode .modal button[onclick*="Remove"],
+.readonly-mode .modal button[onclick*="delete"],
+.readonly-mode .modal button[onclick*="addChar"],
+.readonly-mode .modal button[onclick*="addGuide"],
+.readonly-mode .modal button[onclick*="addHoliday"],
+.readonly-mode .modal button[onclick*="toggleChar"],
+.readonly-mode #mark-remove-btn,
+.readonly-mode #note-remove-btn,
+.readonly-mode #stats-remove-btn,
+.readonly-mode #opp-remove-btn,
+.readonly-mode .char-remove-btn{display:none!important}
+/* Hide add-theme-row in library (already done but ensure) */
+.readonly-mode .stock-add-row{display:none!important}
 </style>
 <script>
 
@@ -3104,7 +3122,33 @@ init();
     window.cyclePhaseInGrid = function() {};
     window.selectOppResult = function() {};
     window.toggleCharStatus = function() {};
-    console.log('[readonly v6] All color-changing interactions disabled');
+    
+    // v6.1: Make all inputs/textareas readonly (can view but not edit)
+    function makeReadonlyInputs() {
+        document.querySelectorAll('input, textarea').forEach(function(el) {
+            el.setAttribute('readonly', 'readonly');
+            el.removeAttribute('contenteditable');
+        });
+    }
+    // Run after DOM ready and after modals open
+    document.addEventListener('DOMContentLoaded', makeReadonlyInputs);
+    setTimeout(makeReadonlyInputs, 200);
+    setTimeout(makeReadonlyInputs, 1000);
+    // Also intercept modal show events
+    var _origAddClass = Element.prototype.classList.add;
+    Element.prototype.classList.add = function() {
+        var ret = _origAddClass.apply(this, arguments);
+        if (arguments[0] === 'show' && this.classList.contains('modal')) {
+            setTimeout(function() {
+                this.querySelectorAll('input, textarea').forEach(function(el) {
+                    el.setAttribute('readonly', 'readonly');
+                });
+            }.bind(this), 50);
+        }
+        return ret;
+    };
+    console.log('[readonly v6.1] Inputs readonly, modal buttons hidden');
+
 })();
 
 </script>
