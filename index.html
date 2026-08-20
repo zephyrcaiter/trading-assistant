@@ -1036,6 +1036,7 @@ header h1 { font-size: 22px; color: #58a6ff; }
         </div>
         <div class="header-actions">
             <button class="btn" onclick="exportReadOnly()">导出只读版</button>
+            <button class="btn" onclick="deployReadOnlyLink()" title="生成只读版在线链接">📤 只读链接</button>
             <button class="btn" onclick="exportData()">导出数据</button>
             <button class="btn" onclick="syncFromCloud()" title="从云端拉取最新数据">☁️ 同步</button>
             <button class="btn" onclick="bindGitHub()" title="绑定GitHub账号实现多设备同步">🔗 绑定</button>
@@ -2681,6 +2682,103 @@ function exportData() {
     URL.revokeObjectURL(url);
     showToast('已导出');
 }
+
+async function deployReadOnlyLink() {
+    const token = getGhToken();
+    if (!token) {
+        showToast('请先绑定 GitHub 账号', true);
+        return;
+    }
+    if (state.themes.length === 0) {
+        showToast('无数据可导出', true);
+        return;
+    }
+    showToast('正在生成只读链接...');
+    
+    try {
+        // 获取当前页面的完整HTML
+        const currentHTML = document.documentElement.outerHTML;
+        
+        // 构建只读版HTML
+        // 移除脚本中的预填充和sync相关（只读版不需要）
+        // 注入只读CSS和覆盖初始化
+        const readonlyCSS = `<style>
+        .readonly-mode .btn, .readonly-mode button[onclick*="open"], 
+        .readonly-mode button[onclick*="add"], .readonly-mode button[onclick*="delete"],
+        .readonly-mode button[onclick*="edit"], .readonly-mode button[onclick*="remove"],
+        .readonly-mode button[onclick*="bind"], .readonly-mode button[onclick*="deploy"],
+        .readonly-mode button[onclick*="export"], .readonly-mode button[onclick*="import"],
+        .readonly-mode button[onclick*="sync"], .readonly-mode button[onclick*="close"],
+        .readonly-mode button[onclick*="save"], .readonly-mode button[onclick*="toggle"],
+        .readonly-mode .add-btn, .readonly-mode .del-btn, .readonly-mode .edit-btn,
+        .readonly-mode .lib-add-row, .readonly-mode .library-actions,
+        .readonly-mode #holiday-btn, .readonly-mode .char-style-row button:last-child,
+        .readonly-mode .note-input, .readonly-mode textarea, .readonly-mode input[type="text"],
+        .readonly-mode #opp-modal textarea, .readonly-mode #opp-modal input { display:none !important; pointer-events:none !important; }
+        .readonly-mode { cursor: default; }
+        </style>`;
+        
+        const readonlyScript = `<script>
+        // 只读版：用嵌入数据初始化
+        document.documentElement.classList.add('readonly-mode');
+        // 覆盖所有编辑函数为空操作
+        ['saveState','addTheme','deleteTheme','renameTheme','addStock','deleteStock',
+         'toggleCell','toggleStockCell','toggleMarketAtm','toggleMarketStats',
+         'bindGitHub','ghSaveData','deployReadOnlyLink'].forEach(fn => {
+            try { window[fn] = function(){}; } catch(e){}
+        });
+        document.title = document.title + ' (只读版)';
+        <\/script>`;
+        
+        // 在 </head> 前注入只读CSS
+        let readonlyHTML = currentHTML.replace('</head>', readonlyCSS + '</head>');
+        // 在 </body> 前注入只读脚本
+        readonlyHTML = readonlyHTML.replace('</body>', readonlyScript + '</body>');
+        
+        // 上传到 GitHub 仓库的 readonly.html
+        // 先获取文件SHA（如果已存在）
+        let fileSha = '';
+        try {
+            const metaResp = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/readonly.html`, {
+                headers: { 'Authorization': `token ${token}` }
+            });
+            if (metaResp.ok) {
+                const meta = await metaResp.json();
+                fileSha = meta.sha;
+            }
+        } catch(e) {}
+        
+        const content = btoa(unescape(encodeURIComponent(readonlyHTML)));
+        const body = {
+            message: `Update readonly version ${new Date().toLocaleString('zh-CN')}`,
+            content: content
+        };
+        if (fileSha) body.sha = fileSha;
+        
+        const saveResp = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/readonly.html`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `token ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(body)
+        });
+        
+        if (saveResp.ok) {
+            const link = `https://${GH_REPO.split('/')[0]}.github.io/${GH_REPO.split('/')[1]}/readonly.html`;
+            // 复制链接到剪贴板
+            try { await navigator.clipboard.writeText(link); } catch(e) {}
+            showToast('只读链接已生成，已复制到剪贴板！');
+            setTimeout(() => alert('只读版链接已复制：\n\n' + link + '\n\n直接发给别人即可，对方只能看不能改。'), 500);
+        } else {
+            const err = await saveResp.json();
+            showToast('部署失败：' + err.message, true);
+        }
+    } catch(e) {
+        showToast('生成失败：' + e.message, true);
+    }
+}
+
 function importData(event) {
     const file = event.target.files[0];
     if (!file) return;
