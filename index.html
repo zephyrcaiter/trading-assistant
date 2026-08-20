@@ -1037,6 +1037,8 @@ header h1 { font-size: 22px; color: #58a6ff; }
         <div class="header-actions">
             <button class="btn" onclick="exportReadOnly()">导出只读版</button>
             <button class="btn" onclick="exportData()">导出数据</button>
+            <button class="btn" onclick="syncFromCloud()" title="从云端拉取最新数据">☁️ 同步</button>
+            <button class="btn" onclick="bindGitHub()" title="绑定GitHub账号实现多设备同步">🔗 绑定</button>
             <button class="btn" onclick="document.getElementById('import-file').click()">导入数据</button>
             <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
         </div>
@@ -1218,6 +1220,9 @@ header h1 { font-size: 22px; color: #58a6ff; }
 
 <script>
 const STORAGE_KEY = 'themeStrengthV3';
+    const GH_REPO = 'zephyrcaiter/trading-assistant';
+    const GH_DATA_FILE = 'data.json';
+    const GH_TOKEN_KEY = 'gh_sync_token';
 // Default themes to pre-populate on first load
 const DEFAULT_THEMES = ['PCB', 'CPO', '创新药', 'AI应用', '机器人', '固态电池', '低空经济', '半导体', '华为概念'];
 let state = { themes: [], data: {}, stocks: {}, holidays: [], marketAtm: {}, stockData: {}, markedDates: {}, dailyNotes: {}, dailyPredictions: {}, marketPhases: {}, phaseNotes: {}, charStyle: {}, marketStats: {}, oppPredict: { row1: {}, row1Result: {}, row2: {}, row2Result: {} } };
@@ -1454,16 +1459,38 @@ let calendarYear = new Date().getFullYear();
 let calendarMonth = new Date().getMonth();
 
 
-// ===== Pre-filled data from export =====
-(function() {
-    var _prefilled = {"themes": ["PCB", "CPO", "创新药", "抱团", "算力", "半导体", "存储", "粮食", "MLCC"], "data": {"PCB": {"2026-08-04": "强", "2026-08-05": "强", "2026-08-06": "强", "2026-08-03": "弱", "2026-08-07": "强", "2026-08-11": "稳", "2026-08-13": "稳", "2026-08-14": "稳", "2026-08-17": "强", "2026-08-12": "稳", "2026-08-18": "弱", "2026-08-19": "弱", "2026-08-20": "稳"}, "CPO": {"2026-08-03": "弱", "2026-08-04": "强", "2026-08-05": "弱", "2026-08-06": "弱", "2026-08-07": "强", "2026-08-11": "稳", "2026-08-17": "强", "2026-08-14": "稳", "2026-08-13": "稳", "2026-08-12": "稳", "2026-08-18": "稳", "2026-08-19": "弱", "2026-08-20": "稳"}, "创新药": {"2026-08-03": "强", "2026-08-04": "弱", "2026-08-05": "弱", "2026-08-06": "强", "2026-08-07": "强", "2026-08-10": "强", "2026-08-11": "稳", "2026-08-17": "稳", "2026-08-14": "稳", "2026-08-12": "稳", "2026-08-13": "强", "2026-08-18": "弱", "2026-08-19": "弱", "2026-08-20": "强"}, "抱团": {"2026-08-13": "稳", "2026-08-12": "强", "2026-08-14": "稳", "2026-08-17": "稳", "2026-08-11": "强", "2026-08-20": "强"}, "算力": {"2026-08-11": "稳", "2026-08-12": "稳", "2026-08-13": "稳", "2026-08-14": "稳", "2026-08-17": "稳", "2026-08-18": "弱", "2026-08-19": "弱", "2026-08-20": "稳"}, "半导体": {"2026-08-11": "稳", "2026-08-12": "稳", "2026-08-13": "稳", "2026-08-14": "稳", "2026-08-17": "强", "2026-08-18": "弱", "2026-08-19": "弱", "2026-08-20": "稳"}, "存储": {"2026-08-17": "强", "2026-08-11": "稳", "2026-08-12": "稳", "2026-08-13": "稳", "2026-08-14": "稳", "2026-08-18": "弱", "2026-08-19": "弱", "2026-08-20": "稳"}, "粮食": {"2026-08-17": "强", "2026-08-18": "强", "2026-08-19": "强"}, "MLCC": {"2026-08-20": "稳", "2026-08-19": "弱", "2026-08-18": "弱"}}, "stocks": {"PCB": ["宝鼎科技", "铜冠铜箔", "洁美科技", "科翔股份"], "CPO": [], "创新药": ["哈药股份", "药明康德", "万邦医药", "百普赛斯"], "抱团": ["哈药股份", "立新能源", "一鸣食品", "艾艾精工"], "算力": ["协创数据", "宏景科技"], "半导体": [], "存储": [], "粮食": ["神龙种业", "金健米业"], "MLCC": ["风华高科", "三环集团"]}, "holidays": [], "marketAtm": {"2026-08-03": "弱", "2026-08-04": "强", "2026-08-05": "强", "2026-08-06": "强", "2026-08-11": "稳", "2026-08-17": "强", "2026-08-13": "弱", "2026-08-12": "稳", "2026-08-18": "弱", "2026-08-14": "稳", "2026-08-19": "弱", "2026-08-20": "强"}, "stockData": {"PCB::宝鼎科技": {"2026-08-13": "稳", "2026-08-11": "强", "2026-08-12": "强", "2026-08-14": "稳", "2026-08-17": "稳"}, "创新药::哈药股份": {"2026-08-05": "弱"}, "PCB::洁美科技": {"2026-08-11": "强", "2026-08-12": "弱", "2026-08-13": "弱", "2026-08-14": "弱", "2026-08-17": "稳"}, "PCB::科翔股份": {"2026-08-11": "强", "2026-08-12": "稳", "2026-08-13": "稳", "2026-08-14": "稳", "2026-08-17": "强"}, "PCB::铜冠铜箔": {"2026-08-14": "稳", "2026-08-11": "稳", "2026-08-12": "稳", "2026-08-13": "稳", "2026-08-17": "强"}}, "markedDates": {"2026-08-13": "第一次大分歧", "2026-08-18": "第二次分歧", "2026-08-19": "退潮确认", "2026-08-20": "第一次反弹"}, "dailyNotes": {"2026-08-11": "", "2026-08-17": "毕业照", "2026-08-14": "接近尾声", "2026-08-18": "风险远没有释放", "2026-08-19": "不要抄底"}, "dailyPredictions": {"2026-08-11": "", "2026-08-14": "今日整体的市场氛围是偏强的，科技呈现一种该弱不弱然后到尾盘上翘的姿态，这种是比较不好的姿态。选择非主流题材，避免科技和创新药。选择日K线两日低吸法。", "2026-08-17": "科技延续走强的趋势，连续强了两天，加上进入了震荡阶段，科技的风险升高，不适宜继续停留。粮食是第二次打出板块效应，引起关注在适当位置介入，电网有表现。均指向明天风险。押注防御板块，粮食、电力、军工，排除创新药。优先形态，从日K出发二日低吸。"}, "marketPhases": {"2026-08-13": "震荡期", "2026-08-05": "主升期", "2026-08-07": "主升期", "2026-08-10": "主升期", "2026-08-06": "主升期", "2026-08-18": "退潮期", "2026-08-11": "震荡期", "2026-08-12": "震荡期", "2026-08-14": "震荡期", "2026-08-17": "震荡期", "2026-08-04": "主升期", "2026-08-19": "退潮期", "2026-08-20": "退潮期"}, "phaseNotes": {"2026-08-04": "起气"}, "charStyle": {"2026-08-19": [{"name": "一鸣食品", "desc": "极致强转弱，昨日涨停转一字跌停，第一次亏钱效应。", "status": "弱"}, {"name": "亨迪药业", "desc": "主流医药题材补涨，低位挖掘反转", "status": "强"}]}, "marketStats": {"2026-08-19": {"zt": 36, "dt": 118, "dm": 14}, "2026-08-18": {"zt": 79, "dt": 5, "dm": 5}}, "oppPredict": {"row1": {"2026-08-13": ["A", "B", "C"]}, "row1Result": {"2026-08-14": "亏"}, "row2": {}, "row2Result": {}}};
-    localStorage.setItem('themeStrengthV3', JSON.stringify(_prefilled));
-    console.log('Pre-filled data loaded:', _prefilled.themes.length, 'themes');
-})();
 
 // ===== Init =====
 function init() {
     loadState();
+    // 自动从云端加载（如果有绑定token）
+    if (getGhToken()) {
+        ghLoadData().then(cloudData => {
+            if (cloudData && cloudData.themes && cloudData.themes.length > 0) {
+                state = {
+                    themes: cloudData.themes || [],
+                    data: cloudData.data || {},
+                    stocks: cloudData.stocks || {},
+                    holidays: cloudData.holidays || [],
+                    marketAtm: cloudData.marketAtm || {},
+                    stockData: cloudData.stockData || {},
+                    markedDates: cloudData.markedDates || {},
+                    dailyNotes: cloudData.dailyNotes || {},
+                    dailyPredictions: cloudData.dailyPredictions || {},
+                    marketPhases: cloudData.marketPhases || {},
+                    phaseNotes: cloudData.phaseNotes || {},
+                    charStyle: cloudData.charStyle || {},
+                    marketStats: cloudData.marketStats || {},
+                    oppPredict: cloudData.oppPredict || {}
+                };
+                saveState();
+                windowEndDate = getRecentTradingDay();
+                renderLibrary();
+                renderGrid();
+                console.log('Cloud data loaded');
+            }
+        }).catch(()=>{});
+    }
     windowEndDate = getRecentTradingDay();
     renderLibrary();
     renderGrid();
@@ -1635,6 +1662,8 @@ function loadState() {
 
 function saveState() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    // 云端同步（异步，不阻塞）
+    if (getGhToken()) { ghSaveData().catch(()=>{}); }
 }
 
 // ===== Date helpers =====
@@ -2684,6 +2713,137 @@ function importData(event) {
     };
     reader.readAsText(file);
     event.target.value = '';
+}
+
+
+// ===== GitHub Cloud Sync =====
+function getGhToken() {
+    return localStorage.getItem(GH_TOKEN_KEY) || '';
+}
+function setGhToken(token) {
+    if (token) localStorage.setItem(GH_TOKEN_KEY, token);
+    else localStorage.removeItem(GH_TOKEN_KEY);
+}
+async function ghLoadData() {
+    try {
+        const resp = await fetch(`https://raw.githubusercontent.com/${GH_REPO}/main/${GH_DATA_FILE}?t=${Date.now()}`);
+        if (!resp.ok) return null;
+        const data = await resp.json();
+        if (data && data.themes) return data;
+        return null;
+    } catch(e) {
+        console.warn('Cloud load failed:', e);
+        return null;
+    }
+}
+async function ghSaveData() {
+    const token = getGhToken();
+    if (!token) return false;
+    try {
+        // 获取文件当前 SHA
+        const metaResp = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/${GH_DATA_FILE}`, {
+            headers: { 'Authorization': `token ${token}` }
+        });
+        if (!metaResp.ok) {
+            if (metaResp.status === 401) {
+                showToast('GitHub token 已失效，请重新绑定', true);
+                setGhToken('');
+            }
+            return false;
+        }
+        const meta = await metaResp.json();
+        const fileSha = meta.sha;
+        
+        // 更新文件
+        const content = btoa(unescape(encodeURIComponent(JSON.stringify(state, null, 2))));
+        const saveResp = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/${GH_DATA_FILE}`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `token ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                message: `Sync data ${new Date().toLocaleString('zh-CN')}`,
+                content: content,
+                sha: fileSha
+            })
+        });
+        if (saveResp.ok) {
+            console.log('Cloud save success');
+            return true;
+        } else {
+            const err = await saveResp.json();
+            console.warn('Cloud save failed:', err.message);
+            return false;
+        }
+    } catch(e) {
+        console.warn('Cloud save error:', e);
+        return false;
+    }
+}
+function bindGitHub() {
+    const currentToken = getGhToken();
+    const token = prompt(
+        currentToken 
+            ? '已绑定 GitHub ✅\n输入新 token 可更换，输入 DELETE 可解绑：'
+            : '请输入 GitHub Personal Access Token（需要 repo 权限）：\n前往 https://github.com/settings/tokens/new 创建',
+        currentToken
+    );
+    if (token === null) return;
+    if (token === 'DELETE') {
+        setGhToken('');
+        showToast('已解除 GitHub 绑定');
+        return;
+    }
+    if (token.trim().length < 10) {
+        showToast('Token 格式不正确', true);
+        return;
+    }
+    setGhToken(token.trim());
+    // 测试 token
+    fetch('https://api.github.com/user', { headers: { 'Authorization': `token ${token.trim()}` }})
+        .then(r => r.json())
+        .then(d => {
+            if (d.login) {
+                showToast(`已绑定 GitHub: ${d.login}`);
+                // 立即同步一次
+                ghSaveData().then(ok => {
+                    if (ok) showToast('数据已同步到云端');
+                });
+            } else {
+                showToast('Token 无效，请检查', true);
+                setGhToken('');
+            }
+        })
+        .catch(() => { showToast('网络错误', true); setGhToken(''); });
+}
+async function syncFromCloud() {
+    const data = await ghLoadData();
+    if (data) {
+        state = {
+            themes: data.themes || [],
+            data: data.data || {},
+            stocks: data.stocks || {},
+            holidays: data.holidays || [],
+            marketAtm: data.marketAtm || {},
+            stockData: data.stockData || {},
+            markedDates: data.markedDates || {},
+            dailyNotes: data.dailyNotes || {},
+            dailyPredictions: data.dailyPredictions || {},
+            marketPhases: data.marketPhases || {},
+            phaseNotes: data.phaseNotes || {},
+            charStyle: data.charStyle || {},
+            marketStats: data.marketStats || {},
+            oppPredict: data.oppPredict || {}
+        };
+        saveState();
+        windowEndDate = getRecentTradingDay();
+        renderLibrary();
+        renderGrid();
+        showToast('已从云端同步最新数据');
+    } else {
+        showToast('云端暂无数据', true);
+    }
 }
 
 // ===== Toast =====
