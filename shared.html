@@ -2755,8 +2755,7 @@ async function deployReadOnlyLink() {
         
         readonlyHTML = readonlyHTML.replace('</head>', readonlyCSS + '</head>');
         
-        // 注入只读初始化脚本（在 <script src="badge.js"></script>
-</body> 之前）
+        // 注入只读初始化脚本（在 </body> 之前）
         const readonlyInitScript = `<script>
         (function() {
             document.documentElement.classList.add('readonly-mode');
@@ -2793,9 +2792,7 @@ async function deployReadOnlyLink() {
         })();
         <\/script>`;
         
-        readonlyHTML = readonlyHTML.replace('<script src="badge.js"></script>
-</body>', readonlyInitScript + '<script src="badge.js"></script>
-</body>');
+        readonlyHTML = readonlyHTML.replace('</body>', readonlyInitScript + '</body>');
         
         // 上传到 GitHub
         let fileSha = '';
