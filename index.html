@@ -1491,6 +1491,35 @@ function init() {
                 console.log('Cloud data loaded');
             }
         }).catch(()=>{});
+    } else {
+        // 没有token时，尝试从同域data.json加载
+        fetch('./data.json?t=' + Date.now(), {cache: 'no-cache'})
+            .then(resp => resp.ok ? resp.json() : null)
+            .then(data => {
+                if (data && data.themes && data.themes.length > 0) {
+                    state = {
+                        themes: data.themes || [],
+                        data: data.data || {},
+                        stocks: data.stocks || {},
+                        holidays: data.holidays || [],
+                        marketAtm: data.marketAtm || {},
+                        stockData: data.stockData || {},
+                        markedDates: data.markedDates || {},
+                        dailyNotes: data.dailyNotes || {},
+                        dailyPredictions: data.dailyPredictions || {},
+                        marketPhases: data.marketPhases || {},
+                        phaseNotes: data.phaseNotes || {},
+                        charStyle: data.charStyle || {},
+                        marketStats: data.marketStats || {},
+                        oppPredict: data.oppPredict || {}
+                    };
+                    windowEndDate = getRecentTradingDay();
+                    renderLibrary();
+                    renderGrid();
+                    console.log('Local data.json loaded');
+                }
+            })
+            .catch(()=>{});
     }
     windowEndDate = getRecentTradingDay();
     renderLibrary();
