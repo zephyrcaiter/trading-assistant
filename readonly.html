@@ -3093,6 +3093,45 @@ init();
     window.ghSaveData = function() { return Promise.resolve(false); };
     window.bindGitHub = function() {};
     window.syncFromCloud = function() {};
+
+    // v6.1.2 FIX: Load embedded data BEFORE any code that might throw (e.g. classList override)
+    // This ensures data renders even on devices without localStorage
+    try {
+        state = JSON.parse(JSON.stringify(_rd));
+        if (typeof renderLibrary === 'function') renderLibrary();
+        if (typeof renderGrid === 'function') renderGrid();
+        if (typeof renderCalendarView === 'function') renderCalendarView();
+        console.log('[readonly v6.1.2] Embedded data loaded');
+    } catch(e) { console.error('[readonly] Embedded data load failed:', e); }
+
+    // Fetch fresh data from data.json (non-blocking)
+    fetch('./data.json?t=' + Date.now(), {cache: 'no-cache'})
+        .then(function(r) { return r.ok ? r.json() : null; })
+        .then(function(d) {
+            if (d && d.themes) {
+                state = {
+                    themes: d.themes || [],
+                    data: d.data || {},
+                    stocks: d.stocks || {},
+                    holidays: d.holidays || [],
+                    marketAtm: d.marketAtm || {},
+                    stockData: d.stockData || {},
+                    markedDates: d.markedDates || {},
+                    dailyNotes: d.dailyNotes || {},
+                    dailyPredictions: d.dailyPredictions || {},
+                    marketPhases: d.marketPhases || {},
+                    phaseNotes: d.phaseNotes || {},
+                    charStyle: d.charStyle || {},
+                    marketStats: d.marketStats || {},
+                    oppPredict: d.oppPredict || {}
+                };
+                if (typeof renderLibrary === 'function') renderLibrary();
+                if (typeof renderGrid === 'function') renderGrid();
+                if (typeof renderCalendarView === 'function') renderCalendarView();
+                console.log('[readonly v6.1.2] Fresh data loaded from data.json');
+            }
+        })
+        .catch(function(e) { console.warn('[readonly] Fetch failed:', e); });
     var _origSetItem = localStorage.setItem;
     localStorage.setItem = function(k, v) {
         if (k === 'themeStrengthV3' || k.indexOf('tradingAssistant') === 0) return;
@@ -3134,56 +3173,24 @@ init();
     document.addEventListener('DOMContentLoaded', makeReadonlyInputs);
     setTimeout(makeReadonlyInputs, 200);
     setTimeout(makeReadonlyInputs, 1000);
-    // Also intercept modal show events
-    var _origAddClass = Element.prototype.classList.add;
-    Element.prototype.classList.add = function() {
-        var ret = _origAddClass.apply(this, arguments);
-        if (arguments[0] === 'show' && this.classList.contains('modal')) {
-            setTimeout(function() {
-                this.querySelectorAll('input, textarea').forEach(function(el) {
-                    el.setAttribute('readonly', 'readonly');
-                });
-            }.bind(this), 50);
-        }
-        return ret;
-    };
+    // Also intercept modal show events (wrapped in try-catch for browser compatibility)
+    try {
+        var _origAddClass = Element.prototype.classList.add;
+        Element.prototype.classList.add = function() {
+            var ret = _origAddClass.apply(this, arguments);
+            if (arguments[0] === 'show' && this.classList.contains('modal')) {
+                setTimeout(function() {
+                    this.querySelectorAll('input, textarea').forEach(function(el) {
+                        el.setAttribute('readonly', 'readonly');
+                    });
+                }.bind(this), 50);
+            }
+            return ret;
+        };
+    } catch(clErr) { console.warn('[readonly] classList override skipped:', clErr); }
     console.log('[readonly v6.1] Inputs readonly, modal buttons hidden');
 
-    // Fix: load embedded data immediately (init() already ran with empty state)
-    state = JSON.parse(JSON.stringify(_rd));
-    if (typeof renderLibrary === 'function') renderLibrary();
-    if (typeof renderGrid === 'function') renderGrid();
-    if (typeof renderCalendarView === 'function') renderCalendarView();
-    console.log('[readonly v6.1.1] Embedded data loaded');
 
-    // Fetch fresh data from data.json
-    fetch('./data.json?t=' + Date.now(), {cache: 'no-cache'})
-        .then(function(r) { return r.ok ? r.json() : null; })
-        .then(function(d) {
-            if (d && d.themes) {
-                state = {
-                    themes: d.themes || [],
-                    data: d.data || {},
-                    stocks: d.stocks || {},
-                    holidays: d.holidays || [],
-                    marketAtm: d.marketAtm || {},
-                    stockData: d.stockData || {},
-                    markedDates: d.markedDates || {},
-                    dailyNotes: d.dailyNotes || {},
-                    dailyPredictions: d.dailyPredictions || {},
-                    marketPhases: d.marketPhases || {},
-                    phaseNotes: d.phaseNotes || {},
-                    charStyle: d.charStyle || {},
-                    marketStats: d.marketStats || {},
-                    oppPredict: d.oppPredict || {}
-                };
-                if (typeof renderLibrary === 'function') renderLibrary();
-                if (typeof renderGrid === 'function') renderGrid();
-                if (typeof renderCalendarView === 'function') renderCalendarView();
-                console.log('[readonly v6.1.1] Fresh data loaded from data.json');
-            }
-        })
-        .catch(function(e) { console.warn('[readonly] Fetch failed:', e); });
 
 })();
 
