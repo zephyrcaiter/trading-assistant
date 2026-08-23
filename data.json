@@ -225,15 +225,7 @@
   "phaseNotes": {
     "2026-08-04": "起气"
   },
-  "charStyle": {
-    "2026-08-20": [
-      {
-        "name": "创新药",
-        "desc": "",
-        "status": "强"
-      }
-    ]
-  },
+  "charStyle": {},
   "marketStats": {},
   "oppPredict": {
     "row1": {},
