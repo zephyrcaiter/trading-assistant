@@ -3149,28 +3149,41 @@ init();
     };
     console.log('[readonly v6.1] Inputs readonly, modal buttons hidden');
 
-    // v6.2: Fetch latest data from data.json and re-render
+    // v6.2.2: Fetch latest data from data.json and re-render
     (async function() {
         try {
             const resp = await fetch('./data.json?t=' + Date.now(), {cache: 'no-cache'});
             if (resp.ok) {
                 const freshData = await resp.json();
                 if (freshData && freshData.themes) {
-                    console.log('[readonly v6.2] Loaded fresh data');
-                    window._readonlyData = freshData;
-                    state = JSON.parse(JSON.stringify(freshData));
-                    if (typeof renderCalendar === 'function') {
-                        setTimeout(function() { 
-                            renderCalendar();
-                            console.log('[readonly v6.2] Re-rendered');
-                        }, 200);
-                    }
+                    console.log('[readonly v6.2.2] Loaded fresh data, themes:', freshData.themes.length);
+                    state = {
+                        themes: freshData.themes || [],
+                        data: freshData.data || {},
+                        stocks: freshData.stocks || {},
+                        holidays: freshData.holidays || [],
+                        marketAtm: freshData.marketAtm || {},
+                        stockData: freshData.stockData || {},
+                        markedDates: freshData.markedDates || {},
+                        dailyNotes: freshData.dailyNotes || {},
+                        dailyPredictions: freshData.dailyPredictions || {},
+                        marketPhases: freshData.marketPhases || {},
+                        phaseNotes: freshData.phaseNotes || {},
+                        charStyle: freshData.charStyle || {},
+                        marketStats: freshData.marketStats || {},
+                        oppPredict: freshData.oppPredict || {}
+                    };
+                    windowEndDate = getRecentTradingDay();
+                    if (typeof renderLibrary === 'function') renderLibrary();
+                    if (typeof renderGrid === 'function') renderGrid();
+                    if (typeof renderCalendar === 'function') renderCalendar();
+                    console.log('[readonly v6.2.2] Re-rendered with fresh data');
                 }
             }
         } catch(e) {
-            console.warn('[readonly v6.2] Fetch failed:', e);
+            console.warn('[readonly v6.2.2] Fetch failed:', e);
         }
-    })();
+    })();();
 
     // v6.2: Fetch latest data from data.json and update if newer
     (async function() {
