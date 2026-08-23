@@ -2755,16 +2755,7 @@ async function deployReadOnlyLink() {
         
         readonlyHTML = readonlyHTML.replace('</head>', readonlyCSS + '</head>');
         
-        // 注入只读初始化脚本（在 <script>
-// Shared version badge
-(function() {
-    document.title = '题材强度表 (共享版)';
-    var badge = document.createElement('div');
-    badge.style.cssText = 'position:fixed;top:8px;right:8px;background:#238636;color:#fff;padding:4px 10px;border-radius:4px;font-size:12px;font-weight:600;z-index:99999;white-space:nowrap;';
-    badge.textContent = '🔗 共享版';
-    document.body.appendChild(badge);
-})();
-</script>
+        // 注入只读初始化脚本（在 <script src="badge.js"></script>
 </body> 之前）
         const readonlyInitScript = `<script>
         (function() {
@@ -2802,26 +2793,8 @@ async function deployReadOnlyLink() {
         })();
         <\/script>`;
         
-        readonlyHTML = readonlyHTML.replace('<script>
-// Shared version badge
-(function() {
-    document.title = '题材强度表 (共享版)';
-    var badge = document.createElement('div');
-    badge.style.cssText = 'position:fixed;top:8px;right:8px;background:#238636;color:#fff;padding:4px 10px;border-radius:4px;font-size:12px;font-weight:600;z-index:99999;white-space:nowrap;';
-    badge.textContent = '🔗 共享版';
-    document.body.appendChild(badge);
-})();
-</script>
-</body>', readonlyInitScript + '<script>
-// Shared version badge
-(function() {
-    document.title = '题材强度表 (共享版)';
-    var badge = document.createElement('div');
-    badge.style.cssText = 'position:fixed;top:8px;right:8px;background:#238636;color:#fff;padding:4px 10px;border-radius:4px;font-size:12px;font-weight:600;z-index:99999;white-space:nowrap;';
-    badge.textContent = '🔗 共享版';
-    document.body.appendChild(badge);
-})();
-</script>
+        readonlyHTML = readonlyHTML.replace('<script src="badge.js"></script>
+</body>', readonlyInitScript + '<script src="badge.js"></script>
 </body>');
         
         // 上传到 GitHub
@@ -3269,16 +3242,7 @@ function removePhaseNote() {
 // ===== Start =====
 init();
 </script>
-<script>
-// Shared version badge
-(function() {
-    document.title = '题材强度表 (共享版)';
-    var badge = document.createElement('div');
-    badge.style.cssText = 'position:fixed;top:8px;right:8px;background:#238636;color:#fff;padding:4px 10px;border-radius:4px;font-size:12px;font-weight:600;z-index:99999;white-space:nowrap;';
-    badge.textContent = '🔗 共享版';
-    document.body.appendChild(badge);
-})();
-</script>
+<script src="badge.js"></script>
 </body>
 </html>
 
