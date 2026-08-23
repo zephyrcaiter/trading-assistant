@@ -237,7 +237,13 @@
     "2026-08-04": "起气"
   },
   "charStyle": {},
-  "marketStats": {},
+  "marketStats": {
+    "2026-08-21": {
+      "zt": 54,
+      "dt": 13,
+      "dm": 10
+    }
+  },
   "oppPredict": {
     "row1": {},
     "row1Result": {},
