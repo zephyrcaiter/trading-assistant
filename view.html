@@ -1,0 +1,3245 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>交易助手</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+    background: #0d1117;
+    color: #e6edf3;
+    min-height: 100vh;
+    padding: 16px;
+    user-select: none;
+}
+.container { max-width: 1280px; margin: 0 auto; }
+
+/* Header */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #30363d;
+}
+header h1 { font-size: 22px; color: #58a6ff; }
+.header-actions { display: flex; gap: 8px; }
+.btn {
+    padding: 6px 14px;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    background: #21262d;
+    color: #c9d1d9;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.15s;
+}
+.btn:hover { background: #30363d; border-color: #8b949e; }
+.btn-primary { background: #1f6feb; border-color: #1f6feb; color: #fff; }
+.btn-primary:hover { background: #388bfd; }
+.btn-danger { background: #da3633; border-color: #da3633; color: #fff; }
+.btn-danger:hover { background: #f85149; }
+.btn-sm { padding: 4px 10px; font-size: 12px; }
+
+/* Main layout */
+.main { display: flex; gap: 20px; align-items: flex-start; }
+
+/* Library Panel */
+.library-panel {
+    flex: 0 0 300px;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    padding: 20px;
+    max-height: calc(100vh - 100px);
+    overflow-y: auto;
+}
+.panel-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #58a6ff;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #21262d;
+}
+.add-theme-row {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+}
+.add-theme-row input {
+    flex: 1;
+    padding: 8px 10px;
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    color: #e6edf3;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.15s;
+}
+.add-theme-row input:focus { border-color: #58a6ff; }
+.theme-list { display: flex; flex-direction: column; gap: 4px; }
+.theme-item {
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    transition: border-color 0.15s;
+    overflow: hidden;
+}
+.theme-item.expanded { border-color: #484f58; }
+.theme-item-header {
+    display: flex;
+    align-items: center;
+    padding: 8px 10px;
+    cursor: pointer;
+    gap: 6px;
+}
+.theme-item-header:hover { background: #161b22; }
+.theme-arrow {
+    font-size: 10px;
+    color: #6e7681;
+    transition: transform 0.15s;
+    width: 12px;
+}
+.theme-item.expanded .theme-arrow { transform: rotate(90deg); }
+.theme-item-name {
+    flex: 1;
+    font-size: 13px;
+    color: #c9d1d9;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.theme-item-count {
+    font-size: 11px;
+    color: #6e7681;
+    background: #21262d;
+    padding: 1px 6px;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+.theme-stock-count {
+    flex-shrink: 0;
+}
+.theme-stock-count {
+    font-size: 11px;
+    color: #58a6ff;
+    background: rgba(31,111,235,0.15);
+    padding: 1px 6px;
+    border-radius: 4px;
+}
+.delete-btn {
+    background: none;
+    border: none;
+    color: #6e7681;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 0 2px;
+    transition: color 0.15s;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 10;
+}
+.delete-btn:hover { color: #f85149; }
+
+/* Stock management (expandable) */
+.theme-stocks {
+    padding: 8px 10px 10px 28px;
+    border-top: 1px solid #21262d;
+    display: none;
+}
+.theme-item.expanded .theme-stocks { display: block; }
+.stock-list { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
+.stock-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    background: rgba(31,111,235,0.1);
+    border: 1px solid #1f6feb;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #79c0ff;
+}
+.stock-tag .x {
+    cursor: pointer;
+    color: #6e7681;
+    font-size: 14px;
+}
+.stock-tag .x:hover { color: #f85149; }
+.stock-add-row {
+    display: flex;
+    gap: 4px;
+}
+.stock-add-row input {
+    flex: 1;
+    padding: 5px 8px;
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 4px;
+    color: #e6edf3;
+    font-size: 12px;
+    outline: none;
+}
+.stock-add-row input:focus { border-color: #58a6ff; }
+.no-stocks {
+    font-size: 11px;
+    color: #6e7681;
+    margin-bottom: 6px;
+}
+.empty-library {
+    text-align: center;
+    color: #6e7681;
+    font-size: 13px;
+    padding: 20px 0;
+}
+.library-footer {
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px solid #21262d;
+}
+
+/* Viz Panel */
+.viz-panel {
+    flex: 1;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    padding: 20px;
+    min-width: 0;
+}
+
+/* Date navigation */
+.date-nav {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+.date-range {
+    font-size: 14px;
+    color: #c9d1d9;
+    flex: 1;
+    text-align: center;
+    min-width: 140px;
+}
+.date-jump { display: flex; align-items: center; gap: 4px; }
+.date-jump input {
+    padding: 4px 8px;
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 4px;
+    color: #e6edf3;
+    font-size: 12px;
+}
+
+/* Grid */
+.grid-wrap { overflow-x: auto; }
+.grid-container { min-width: 520px; }
+.grid-header {
+    display: grid;
+    grid-template-columns: 150px repeat(5, 1fr) 50px;
+    gap: 4px;
+    margin-bottom: 6px;
+}
+.grid-header > div {
+    text-align: center;
+    font-size: 12px;
+    color: #8b949e;
+    padding: 6px 2px;
+}
+.grid-header > div.today-col { color: #58a6ff; font-weight: 600; }
+.grid-row {
+    display: grid;
+    grid-template-columns: 150px repeat(5, 1fr) 50px;
+    gap: 4px;
+    margin-bottom: 4px;
+    min-height: 54px;
+}
+.theme-label {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 4px 8px;
+    overflow: hidden;
+}
+.theme-label-name {
+    font-size: 13px;
+    color: #c9d1d9;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.theme-label-stocks {
+    font-size: 10px;
+    color: #6e7681;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 2px;
+    line-height: 1.3;
+}
+.cell {
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.12s;
+    border: 1px solid transparent;
+    min-height: 54px;
+}
+.cell:hover { transform: scale(1.05); }
+.cell-strong { background: #da3633; color: #fff; border-color: #f85149; }
+.cell-stable { background: #1f6feb; color: #fff; border-color: #388bfd; }
+.cell-weak { background: #238636; color: #fff; border-color: #2ea043; }
+.cell-none { background: #21262d; color: #484f58; border-color: #30363d; }
+.cell-none:hover { background: #2d333b; }
+.cell-today { box-shadow: 0 0 0 2px #58a6ff; }
+.trend-icon { text-align: center; font-size: 16px; display: flex; align-items: center; justify-content: center; }
+
+/* Section divider */
+.section-divider {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 10px 0 6px;
+    padding: 4px 0;
+    font-size: 13px;
+    color: #8b949e;
+}
+.section-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #30363d;
+}
+.section-divider span {
+    white-space: nowrap;
+    font-weight: 600;
+}
+/* Atmosphere row highlight */
+.atm-row {
+    background: rgba(210,153,34,0.05);
+    border-radius: 6px;
+    padding: 2px 0;
+}
+
+/* Clickable theme label */
+.theme-clickable {
+    cursor: pointer;
+    transition: background 0.15s;
+}
+.theme-clickable:hover { background: rgba(31,111,235,0.1); }
+.theme-label-sub {
+    font-size: 10px;
+    color: #6e7681;
+    margin-top: 2px;
+}
+.theme-clickable:hover .theme-label-sub { color: #58a6ff; }
+
+/* Marked dates */
+.marked-col-head {
+    background: rgba(210,153,34,0.2);
+    border-radius: 4px 4px 0 0;
+}
+.mark-label {
+    font-size: 10px;
+    color: #e3b341;
+    font-weight: 600;
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.marked-cell {
+    box-shadow: inset 0 0 0 2px rgba(210,153,34,0.5);
+}
+
+/* Detail view */
+.detail-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+.detail-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #58a6ff;
+}
+.detail-stock-count {
+    font-size: 12px;
+    color: #6e7681;
+    background: #21262d;
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+.detail-grid-wrap {
+    overflow-x: auto;
+    margin-bottom: 12px;
+}
+.detail-grid {
+    display: inline-block;
+    min-width: 100%;
+}
+.detail-grid-row {
+    display: grid;
+    grid-template-columns: var(--detail-cols);
+    gap: 3px;
+    margin-bottom: 3px;
+}
+.detail-grid-header {
+    margin-bottom: 6px;
+}
+.detail-row-label {
+    display: flex;
+    align-items: center;
+    padding: 4px 8px;
+    font-size: 13px;
+    color: #c9d1d9;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    position: sticky;
+    left: 0;
+    z-index: 2;
+    background: #161b22;
+    box-shadow: 2px 0 4px rgba(0,0,0,0.2);
+}
+.detail-theme-label {
+    font-weight: 600;
+    color: #e3b341;
+}
+.detail-stock-label {
+    padding-left: 22px;
+    font-size: 12px;
+    color: #8b949e;
+}
+.detail-date-cell {
+    text-align: center;
+    font-size: 12px;
+    color: #8b949e;
+    padding: 6px 2px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background 0.15s;
+}
+.detail-date-cell:hover { background: rgba(31,111,235,0.15); }
+.detail-weekday {
+    font-size: 10px;
+    color: #6e7681;
+}
+.detail-cell {
+    min-height: 42px;
+    font-size: 12px;
+}
+.detail-stock-row .detail-cell {
+    min-height: 36px;
+}
+/* Stock sub-rows */
+.stock-row {
+    min-height: 38px;
+    margin-bottom: 2px;
+}
+.stock-label {
+    padding-left: 22px;
+}
+.stock-label-name {
+    font-size: 12px;
+    color: #8b949e;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.stock-cell {
+    min-height: 38px;
+    font-size: 12px;
+}
+.stock-trend {
+    font-size: 13px;
+}
+
+/* Legend & hint */
+.legend {
+    display: flex;
+    gap: 16px;
+    margin-top: 14px;
+    font-size: 12px;
+    color: #8b949e;
+    flex-wrap: wrap;
+}
+.legend-item { display: flex; align-items: center; gap: 4px; }
+.legend-dot { width: 14px; height: 14px; border-radius: 4px; }
+.legend-dot.strong { background: #da3633; }
+.legend-dot.stable { background: #1f6feb; }
+.legend-dot.weak { background: #238636; }
+.legend-dot.none { background: #21262d; border: 1px solid #30363d; }
+.click-hint { margin-top: 6px; font-size: 12px; color: #6e7681; }
+
+/* Daily Notes Row */
+.daily-note-cell {
+    text-align: left !important;
+    font-size: 11px !important;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: pointer;
+    padding: 4px 6px !important;
+    color: #c9d1d9;
+    line-height: 1.4;
+}
+.daily-note-cell:hover {
+    border-color: #58a6ff !important;
+    background: #161b22;
+}
+.daily-note-empty {
+    color: #484f58;
+    font-style: italic;
+}
+.char-style-cell {
+    font-size: 11px;
+    padding: 4px 3px;
+    cursor: pointer;
+    line-height: 1.4;
+    word-break: break-all;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    align-items: flex-start;
+    justify-content: flex-start;
+}
+.char-style-cell:hover { background: rgba(31,111,235,0.1); }
+.char-stock-tag {
+    display: inline-block;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 10px;
+    font-weight: 600;
+    white-space: nowrap;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.char-stock-tag.strong { background: rgba(218,54,51,0.2); color: #da3633; border: 1px solid rgba(218,54,51,0.3); }
+.char-stock-tag.weak { background: rgba(35,134,54,0.2); color: #238636; border: 1px solid rgba(35,134,54,0.3); }
+
+.opp-predict-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    cursor: pointer;
+    padding: 3px 2px;
+    line-height: 1.3;
+}
+.opp-predict-cell:hover { background: rgba(31,111,235,0.1); }
+.opp-pair-left {
+    border-right: none !important;
+    border-top-right-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+    border-top-left-radius: 4px !important;
+    border-bottom-left-radius: 4px !important;
+    border-left: 2px solid rgba(212,160,23,0.7) !important;
+    border-top: 2px solid rgba(212,160,23,0.7) !important;
+    border-bottom: 2px solid rgba(212,160,23,0.7) !important;
+    background: rgba(139,92,246,0.18);
+    margin-right: -4px;
+    z-index: 1;
+}
+.opp-pair-right {
+    border-left: none !important;
+    border-top-left-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
+    border-top-right-radius: 4px !important;
+    border-bottom-right-radius: 4px !important;
+    border-right: 2px solid rgba(212,160,23,0.7) !important;
+    border-top: 2px solid rgba(212,160,23,0.7) !important;
+    border-bottom: 2px solid rgba(212,160,23,0.7) !important;
+    background: rgba(139,92,246,0.18);
+    margin-left: -4px;
+}
+.opp-stock-name {
+    color: #e3b341;
+    font-weight: 600;
+    font-size: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+.opp-result-item {
+    font-size: 14px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.opp-result-item.win { color: #da3633; }
+.opp-result-item.lose { color: #238636; }
+.market-stats-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 3px 2px;
+    line-height: 1.3;
+}
+.market-stats-cell:hover { background: rgba(31,111,235,0.1); }
+.stat-zt { color: #da3633; }
+.stat-dt { color: #238636; }
+.stat-dm { color: #238636; }
+
+.char-modal_box {
+    max-width: 520px;
+    width: 92%;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+}
+.char-modal_body {
+    flex: 1;
+    overflow-y: auto;
+    margin: 8px 0 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.char-entry {
+    display: flex;
+    gap: 6px;
+    align-items: flex-start;
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 8px;
+}
+.char-entry input[type="text"] {
+    width: 100px;
+    padding: 5px 8px;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 4px;
+    color: #e6edf3;
+    font-size: 12px;
+    outline: none;
+    flex-shrink: 0;
+}
+.char-entry input[type="text"]:focus { border-color: #58a6ff; }
+.char-entry textarea {
+    flex: 1;
+    min-height: 32px;
+    padding: 5px 8px;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 4px;
+    color: #e6edf3;
+    font-size: 12px;
+    outline: none;
+    resize: vertical;
+    font-family: inherit;
+}
+.char-entry textarea:focus { border-color: #58a6ff; }
+.char-status-toggle {
+    flex-shrink: 0;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    border: 1px solid;
+    text-align: center;
+    min-width: 32px;
+    transition: all 0.15s;
+}
+.char-status-toggle.strong { background: rgba(218,54,51,0.15); color: #da3633; border-color: rgba(218,54,51,0.4); }
+.char-status-toggle.weak { background: rgba(35,134,54,0.15); color: #238636; border-color: rgba(35,134,54,0.4); }
+.char-remove-btn {
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    color: #6e7681;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 4px 2px;
+    line-height: 1;
+}
+.char-remove-btn:hover { color: #f85149; }
+
+
+/* Empty state */
+.empty-state { text-align: center; padding: 40px 20px; color: #6e7681; font-size: 14px; }
+
+/* Toast */
+.toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 10px 20px;
+    background: #238636;
+    color: #fff;
+    border-radius: 8px;
+    font-size: 14px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    z-index: 999;
+    pointer-events: none;
+}
+.toast.show { opacity: 1; }
+.toast.error { background: #da3633; }
+
+/* Modal */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.6);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 998;
+}
+.modal-overlay.show { display: flex; }
+.modal-box {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    padding: 24px;
+    max-width: 420px;
+    width: 90%;
+}
+.modal-box h3 { font-size: 16px; color: #58a6ff; margin-bottom: 8px; }
+.modal-hint { font-size: 12px; color: #6e7681; margin-bottom: 16px; }
+.holiday-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-height: 300px;
+    overflow-y: auto;
+    margin-bottom: 16px;
+}
+.holiday-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 10px;
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 4px;
+    font-size: 13px;
+}
+.holiday-item .date { color: #c9d1d9; }
+.holiday-item .weekday { color: #6e7681; font-size: 11px; margin-left: 8px; }
+.holiday-empty { color: #6e7681; font-size: 13px; text-align: center; padding: 16px 0; }
+.holiday-add-row { display: flex; gap: 6px; margin-bottom: 16px; }
+.holiday-add-row input {
+    flex: 1;
+    padding: 6px 10px;
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 4px;
+    color: #e6edf3;
+    font-size: 13px;
+}
+.modal-close { text-align: right; }
+
+/* Confirm dialog */
+.confirm-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+}
+.confirm-box {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    padding: 24px;
+    max-width: 360px;
+    text-align: center;
+}
+.confirm-box p { margin-bottom: 16px; font-size: 14px; }
+.confirm-box .btn { margin: 0 4px; padding: 8px 20px; }
+
+/* View Tabs */
+.view-tabs { display: flex; gap: 4px; }
+.tab-btn {
+    padding: 6px 16px;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    background: #0d1117;
+    color: #8b949e;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.15s;
+}
+.tab-btn:hover { background: #21262d; color: #c9d1d9; }
+.tab-btn.active {
+    background: #1f6feb;
+    border-color: #1f6feb;
+    color: #fff;
+}
+
+/* Calendar View */
+.calendar-container {
+    margin-bottom: 12px;
+}
+.calendar-nav {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+.calendar-nav .month-label {
+    font-size: 18px;
+    font-weight: 600;
+    color: #e6edf3;
+    min-width: 140px;
+    text-align: center;
+}
+.calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    margin-bottom: 4px;
+}
+.calendar-weekdays > div {
+    text-align: center;
+    font-size: 12px;
+    color: #6e7681;
+    padding: 6px 0;
+    font-weight: 600;
+}
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+}
+.calendar-day {
+    min-height: 80px;
+    border: 1px solid #21262d;
+    border-radius: 6px;
+    padding: 6px;
+    cursor: pointer;
+    transition: all 0.12s;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    user-select: none;
+}
+.calendar-day:hover { border-color: #484f58; }
+.calendar-day.empty { background: transparent; border-color: transparent; cursor: default; }
+.calendar-day.weekend { background: rgba(110,118,129,0.05); }
+.calendar-day.holiday { background: rgba(218,54,51,0.05); border-color: rgba(218,54,51,0.2); }
+.calendar-day.today { box-shadow: inset 0 0 0 2px #58a6ff; }
+
+.calendar-day .day-number {
+    font-size: 13px;
+    font-weight: 600;
+    color: #c9d1d9;
+}
+.calendar-day.weekend .day-number { color: #6e7681; }
+.calendar-day.today .day-number { color: #58a6ff; }
+
+.calendar-day .phase-tag {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    margin-top: 4px;
+    font-weight: 600;
+    text-align: center;
+    line-height: 1.3;
+}
+.calendar-day .day-note {
+    font-size: 10px;
+    color: #8b949e;
+    margin-top: 3px;
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    word-break: break-all;
+}
+
+/* Phase colors */
+.phase-yunyu { background: rgba(139,92,246,0.2); color: #a78bfa; border-color: #8b5cf6 !important; }
+.phase-yunyu .phase-tag { background: rgba(139,92,246,0.3); color: #c4b5fd; }
+.phase-zhusheng { background: rgba(218,54,51,0.15); color: #f85149; border-color: #da3633 !important; }
+.phase-zhusheng .phase-tag { background: rgba(218,54,51,0.3); color: #fca5a5; }
+.phase-zhendang { background: rgba(210,153,34,0.15); color: #e3b341; border-color: #bb6700 !important; }
+.phase-zhendang .phase-tag { background: rgba(210,153,34,0.3); color: #fbbf24; }
+.phase-tuichao { background: rgba(35,134,54,0.15); color: #56d364; border-color: #238636 !important; }
+.phase-tuichao .phase-tag { background: rgba(35,134,54,0.3); color: #86efac; }
+
+/* Calendar Legend */
+.calendar-legend {
+    display: flex;
+    gap: 16px;
+    margin-top: 16px;
+    font-size: 12px;
+    color: #8b949e;
+    flex-wrap: wrap;
+    align-items: center;
+}
+.calendar-legend .legend-item { display: flex; align-items: center; gap: 4px; }
+.calendar-legend .legend-dot { width: 14px; height: 14px; border-radius: 4px; }
+.calendar-legend .legend-dot.yunyu { background: #8b5cf6; }
+.calendar-legend .legend-dot.zhusheng { background: #da3633; }
+.calendar-legend .legend-dot.zhendang { background: #d29922; }
+.calendar-legend .legend-dot.tuichao { background: #238636; }
+
+/* Phase note edit modal */
+.phase-note-input {
+    width: 100%;
+    padding: 8px 10px;
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    color: #e6edf3;
+    font-size: 13px;
+    outline: none;
+    margin-top: 8px;
+    font-family: inherit;
+}
+.phase-note-input:focus { border-color: #58a6ff; }
+/* Collapsible themes section */
+.section-divider.collapsible {
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+.section-divider.collapsible:hover { background: rgba(31,111,235,0.08); }
+.section-divider .collapse-arrow {
+    display: inline-block;
+    font-size: 10px;
+    color: #6e7681;
+    transition: transform 0.2s;
+    margin-right: 4px;
+}
+.section-divider.expanded .collapse-arrow { transform: rotate(90deg); }
+.themes-body { display: none; }
+.themes-body.show { display: block; }
+
+/* Phase indicator in grid header */
+.phase-indicator {
+    font-size: 9px;
+    padding: 1px 5px;
+    border-radius: 3px;
+    margin-top: 3px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-block;
+    transition: all 0.12s;
+    line-height: 1.4;
+}
+.phase-indicator:hover { opacity: 0.8; transform: scale(1.05); }
+.phase-indicator.yunyu { background: rgba(139,92,246,0.3); color: #c4b5fd; }
+.phase-indicator.zhusheng { background: rgba(218,54,51,0.3); color: #fca5a5; }
+.phase-indicator.zhendang { background: rgba(210,153,34,0.3); color: #fbbf24; }
+.phase-indicator.tuichao { background: rgba(35,134,54,0.3); color: #86efac; }
+.phase-indicator.phase-empty { background: rgba(110,118,129,0.15); color: #6e7681; font-size: 10px; }
+
+/* Month View Overlay */
+.month-view-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.7);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 996;
+}
+.month-view-overlay.show { display: flex; }
+.month-view-box {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 12px;
+    padding: 24px;
+    max-width: 720px;
+    width: 95%;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+.month-view-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+.month-view-header h3 { font-size: 16px; color: #58a6ff; }
+
+/* Library Modal */
+.library-modal-box {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 12px;
+    padding: 24px;
+    max-width: 640px;
+    width: 92%;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+}
+.library-modal-box h3 {
+    font-size: 18px;
+    color: #58a6ff;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #21262d;
+}
+.library-modal-body {
+    flex: 1;
+    overflow-y: auto;
+}
+.library-modal-footer {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #21262d;
+    display: flex;
+    gap: 8px;
+    justify-content: space-between;
+}
+</style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <div style="display:flex;align-items:center;gap:16px">
+            <h1>📊 交易助手</h1>
+            <button class="btn" onclick="openLibraryModal()">📚 题材库</button>
+            <button class="btn" onclick="openGuideModal()">📖 交易指引</button>
+        </div>
+        <div class="header-actions">
+            <button class="btn" onclick="exportReadOnly()">导出只读版</button>
+            <button class="btn" onclick="deployReadOnlyLink()" title="生成只读版在线链接">📤 只读链接</button>
+            <button class="btn" onclick="exportData()">导出数据</button>
+            <button class="btn" onclick="syncFromCloud()" title="从云端拉取最新数据">☁️ 同步</button>
+            <button class="btn" onclick="bindGitHub()" title="绑定GitHub账号实现多设备同步">🔗 绑定</button>
+            <button class="btn" onclick="document.getElementById('import-file').click()">导入数据</button>
+            <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
+        </div>
+    </header>
+    <div class="main">
+        <!-- Visualization -->
+        <div class="viz-panel">
+            <div class="panel-title"></div>
+            <div class="date-nav">
+                <button class="btn btn-sm" onclick="shiftWindow(-1)">◄ 上一天</button>
+                <span class="date-range" id="date-range-text"></span>
+                <button class="btn btn-sm" onclick="shiftWindow(1)">下一天 ►</button>
+                <button class="btn btn-sm" onclick="jumpToToday()">今日</button>
+                <div class="date-jump">
+                    <input type="date" id="jump-date" onchange="jumpToDate(this.value)" title="跳到日期">
+                </div>
+                <button class="btn btn-sm" onclick="openMonthView()" title="查看月度周期日历">📅 月度视图</button>
+            </div>
+            <div id="viz-content"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Holiday Modal -->
+<div class="modal-overlay" id="holiday-modal">
+    <div class="modal-box">
+        <h3>🗓 节假日管理</h3>
+        <p class="modal-hint">已自动排除周六周日，请手动添加A股休市日（如国庆、春节等）</p>
+        <div class="holiday-list" id="holiday-list"></div>
+        <div class="holiday-add-row">
+            <input type="date" id="new-holiday" placeholder="选择日期">
+            <button class="btn btn-primary btn-sm" onclick="addHoliday()">添加</button>
+        </div>
+        <div class="modal-close">
+            <button class="btn" onclick="closeHolidayModal()">关闭</button>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div id="confirm-dialog"></div>
+
+<!-- Mark Date Modal -->
+<div class="modal-overlay" id="mark-modal">
+    <div class="modal-box">
+        <h3>📌 标注关键日</h3>
+        <p class="modal-hint" id="mark-date-display"></p>
+        <input type="text" id="mark-label-input" placeholder="输入标注名称（如：大爆发、恐慌日）" maxlength="20"
+               style="width:100%;padding:8px 10px;background:#0d1117;border:1px solid #30363d;border-radius:6px;color:#e6edf3;font-size:13px;margin-bottom:16px;outline:none"
+               onkeydown="if(event.key==='Enter')saveMarkDate()">
+        <div style="display:flex;gap:8px;justify-content:flex-end">
+            <button class="btn btn-danger btn-sm" id="mark-remove-btn" onclick="removeMarkDate()" style="display:none">取消标注</button>
+            <button class="btn btn-primary btn-sm" onclick="saveMarkDate()">保存</button>
+            <button class="btn btn-sm" onclick="closeMarkDialog()">关闭</button>
+        </div>
+    </div>
+</div>
+
+<!-- Note Modal -->
+<div class="modal-overlay" id="note-modal">
+    <div class="modal-box">
+        <h3>📝 每日记录</h3>
+        <p class="modal-hint" id="note-date-display"></p>
+        <input type="text" id="note-title-input" placeholder="题目（简短标题，显示在格子中）" maxlength="30"
+               style="width:100%;padding:8px 10px;background:#0d1117;border:1px solid #30363d;border-radius:6px;color:#e6edf3;font-size:13px;margin-bottom:10px;outline:none">
+        <textarea id="note-content-input" placeholder="正文（详细内容）"
+                  style="width:100%;min-height:120px;padding:8px 10px;background:#0d1117;border:1px solid #30363d;border-radius:6px;color:#e6edf3;font-size:13px;margin-bottom:16px;outline:none;resize:vertical;font-family:inherit"></textarea>
+        <div style="display:flex;gap:8px;justify-content:flex-end">
+            <button class="btn btn-danger btn-sm" id="note-remove-btn" onclick="removeNote()" style="display:none">删除</button>
+            <button class="btn btn-primary btn-sm" onclick="saveNote()">保存</button>
+            <button class="btn btn-sm" onclick="closeNoteModal()">关闭</button>
+        </div>
+    </div>
+</div>
+
+<!-- Char Style Modal -->
+<div class="modal-overlay" id="char-style-modal">
+    <div class="modal-box char-modal_box">
+        <h3>🎭 特征风格</h3>
+        <p class="modal-hint" id="char-date-display"></p>
+        <div class="char-modal_body" id="char-entries-body"></div>
+        <div style="display:flex;gap:8px;justify-content:space-between;align-items:center">
+            <button class="btn btn-sm" onclick="addCharStockEntry()" style="background:#21262d;color:#8b949e">+ 添加个股</button>
+            <div style="display:flex;gap:8px">
+                <button class="btn btn-primary btn-sm" onclick="saveCharStyle()">保存</button>
+                <button class="btn btn-sm" onclick="closeCharStyleModal()">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Market Stats Modal -->
+<div class="modal-overlay" id="market-stats-modal">
+    <div class="modal-box">
+        <h3>📊 涨跌统计</h3>
+        <p class="modal-hint" id="stats-date-display"></p>
+        <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:16px">
+            <div style="display:flex;align-items:center;gap:10px">
+                <label style="width:50px;font-size:12px;color:#da3633;font-weight:600">涨停</label>
+                <input type="number" id="stats-zt-input" placeholder="数量" min="0" style="flex:1;padding:8px 10px;background:#0d1117;border:1px solid #30363d;border-radius:6px;color:#e6edf3;font-size:13px;outline:none">
+            </div>
+            <div style="display:flex;align-items:center;gap:10px">
+                <label style="width:50px;font-size:12px;color:#238636;font-weight:600">跌停</label>
+                <input type="number" id="stats-dt-input" placeholder="数量" min="0" style="flex:1;padding:8px 10px;background:#0d1117;border:1px solid #30363d;border-radius:6px;color:#e6edf3;font-size:13px;outline:none">
+            </div>
+            <div style="display:flex;align-items:center;gap:10px">
+                <label style="width:50px;font-size:12px;color:#238636;font-weight:600">大面</label>
+                <input type="number" id="stats-dm-input" placeholder="数量" min="0" style="flex:1;padding:8px 10px;background:#0d1117;border:1px solid #30363d;border-radius:6px;color:#e6edf3;font-size:13px;outline:none">
+            </div>
+        </div>
+        <div style="display:flex;gap:8px;justify-content:flex-end">
+            <button class="btn btn-danger btn-sm" id="stats-remove-btn" onclick="removeMarketStats()" style="display:none">清除</button>
+            <button class="btn btn-primary btn-sm" onclick="saveMarketStats()">保存</button>
+            <button class="btn btn-sm" onclick="closeMarketStatsModal()">关闭</button>
+        </div>
+    </div>
+</div>
+
+<!-- Opportunity Prediction Modal -->
+<div class="modal-overlay" id="opp-modal">
+    <div class="modal-box" style="max-width:400px">
+        <h3 id="opp-modal-title">机会预测</h3>
+        <p class="modal-hint" id="opp-modal-hint"></p>
+        <div id="opp-modal-body"></div>
+        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
+            <button class="btn btn-danger btn-sm" id="opp-remove-btn" onclick="removeOppData()" style="display:none">清除</button>
+            <button class="btn btn-primary btn-sm" onclick="saveOppData()">保存</button>
+            <button class="btn btn-sm" onclick="closeOppModal()">关闭</button>
+        </div>
+    </div>
+</div>
+
+<!-- Month View Overlay -->
+<div class="month-view-overlay" id="month-view-overlay">
+    <div class="month-view-box">
+        <div class="month-view-header">
+            <h3>📅 市场周期日历</h3>
+            <button class="btn btn-sm" onclick="closeMonthView()">✕ 关闭</button>
+        </div>
+        <div id="month-view-content"></div>
+    </div>
+</div>
+
+<!-- Library Modal -->
+<div class="modal-overlay" id="library-modal">
+    <div class="library-modal-box">
+        <h3>📚 题材库</h3>
+        <div class="library-modal-body">
+            <div class="add-theme-row">
+                <input type="text" id="new-theme-name" placeholder="输入题材名称" maxlength="12" onkeydown="if(event.key==='Enter')addTheme()">
+                <button class="btn btn-primary btn-sm" onclick="addTheme()">添加</button>
+            </div>
+            <div id="theme-list" class="theme-list"></div>
+        </div>
+        <div class="library-modal-footer">
+            <button class="btn btn-sm" onclick="openHolidayModal();closeLibraryModal()">🗓 节假日管理</button>
+            <button class="btn btn-primary btn-sm" onclick="closeLibraryModal()">关闭</button>
+        </div>
+    </div>
+</div>
+
+<!-- Guide Modal -->
+<div class="modal-overlay" id="guide-modal">
+    <div class="library-modal-box" style="max-width:760px;max-height:85vh">
+        <h3>📖 交易指引</h3>
+        <div class="library-modal-body">
+            <div style="margin-bottom:12px;display:flex;gap:8px">
+                <input type="text" id="new-guide-title" placeholder="输入文章标题" style="flex:1;background:#0d1117;border:1px solid #30363d;border-radius:6px;color:#c9d1d9;padding:6px 10px;font-size:14px">
+                <button class="btn btn-primary btn-sm" onclick="addGuideArticle()">+ 新文章</button>
+            </div>
+            <div id="guide-articles-list"></div>
+        </div>
+        <div class="library-modal-footer">
+            <span style="color:#8b949e;font-size:12px">内容自动保存</span>
+            <button class="btn btn-primary btn-sm" onclick="closeGuideModal()">关闭</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const STORAGE_KEY = 'themeStrengthV3';
+    const GH_REPO = 'zephyrcaiter/trading-assistant';
+    const GH_DATA_FILE = 'data.json';
+    const GH_TOKEN_KEY = 'gh_sync_token';
+// Default themes to pre-populate on first load
+const DEFAULT_THEMES = ['PCB', 'CPO', '创新药', 'AI应用', '机器人', '固态电池', '低空经济', '半导体', '华为概念'];
+let state = { themes: [], data: {}, stocks: {}, holidays: [], marketAtm: {}, stockData: {}, markedDates: {}, dailyNotes: {}, dailyPredictions: {}, marketPhases: {}, phaseNotes: {}, charStyle: {}, marketStats: {}, oppPredict: { row1: {}, row1Result: {}, row2: {}, row2Result: {} } };
+let windowEndDate = null;
+let expandedTheme = null;
+let currentView = 'main';
+let detailTheme = null;
+let markDateTarget = null;
+let themesCollapsed = true;
+let _markFromCalendar = false;
+let noteDateTarget = null;
+// ===== Char Style Modal =====
+let charDateTarget = null;
+let charDraftEntries = [];
+
+function openCharStyleModal(date) {
+    charDateTarget = date;
+    const stocks = state.charStyle[date] || [];
+    charDraftEntries = JSON.parse(JSON.stringify(stocks));
+    document.getElementById('char-date-display').textContent = formatDateShort(date) + ' ' + formatWeekday(date);
+    renderCharEntries();
+    document.getElementById('char-style-modal').classList.add('show');
+}
+function renderCharEntries() {
+    const body = document.getElementById('char-entries-body');
+    if (charDraftEntries.length === 0) {
+        body.innerHTML = '<div style="text-align:center;color:#6e7681;font-size:12px;padding:20px 0">暂无记录，点击下方"添加个股"开始</div>';
+        return;
+    }
+    let html = '';
+    charDraftEntries.forEach((entry, idx) => {
+        const toggleCls = entry.status === '强' ? 'strong' : 'weak';
+        html += '<div class="char-entry">' +
+            '<input type="text" value="' + (entry.name || '').replace(/"/g, '&quot;') + '" placeholder="股票名称" maxlength="10" oninput="charDraftEntries[' + idx + '].name=this.value">' +
+            '<textarea placeholder="该股票体现的特征（一句话）" oninput="charDraftEntries[' + idx + '].desc=this.value">' + (entry.desc || '') + '</textarea>' +
+            '<div class="char-status-toggle ' + toggleCls + '" onclick="toggleCharStatus(' + idx + ')">' + entry.status + '</div>' +
+            '<button class="char-remove-btn" onclick="removeCharStockEntry(' + idx + ')">\u2715</button>' +
+            '</div>';
+    });
+    body.innerHTML = html;
+}
+function addCharStockEntry() {
+    charDraftEntries.push({ name: '', desc: '', status: '强' });
+    renderCharEntries();
+    // Focus the new input
+    setTimeout(() => {
+        const inputs = document.querySelectorAll('.char-entry input[type="text"]');
+        if (inputs.length > 0) inputs[inputs.length - 1].focus();
+    }, 50);
+}
+function removeCharStockEntry(idx) {
+    charDraftEntries.splice(idx, 1);
+    renderCharEntries();
+}
+function toggleCharStatus(idx) {
+    charDraftEntries[idx].status = charDraftEntries[idx].status === '强' ? '弱' : '强';
+    renderCharEntries();
+}
+function saveCharStyle() {
+    if (!charDateTarget) return;
+    // Filter out empty entries
+    const valid = charDraftEntries.filter(e => e.name.trim());
+    if (valid.length > 0) {
+        state.charStyle[charDateTarget] = valid;
+    } else {
+        delete state.charStyle[charDateTarget];
+    }
+    saveState();
+    closeCharStyleModal();
+    renderGrid();
+}
+function closeCharStyleModal() {
+    document.getElementById('char-style-modal').classList.remove('show');
+    charDateTarget = null;
+    charDraftEntries = [];
+}
+
+// ===== Market Stats Modal =====
+let statsDateTarget = null;
+
+function openMarketStatsModal(date) {
+    statsDateTarget = date;
+    const stats = state.marketStats[date] || {};
+    document.getElementById('stats-date-display').textContent = formatDateShort(date) + ' ' + formatWeekday(date);
+    document.getElementById('stats-zt-input').value = stats.zt != null ? stats.zt : '';
+    document.getElementById('stats-dt-input').value = stats.dt != null ? stats.dt : '';
+    document.getElementById('stats-dm-input').value = stats.dm != null ? stats.dm : '';
+    const hasData = stats.zt != null || stats.dt != null || stats.dm != null;
+    document.getElementById('stats-remove-btn').style.display = hasData ? '' : 'none';
+    document.getElementById('market-stats-modal').classList.add('show');
+    setTimeout(() => document.getElementById('stats-zt-input').focus(), 100);
+}
+function saveMarketStats() {
+    if (!statsDateTarget) return;
+    const zt = document.getElementById('stats-zt-input').value;
+    const dt = document.getElementById('stats-dt-input').value;
+    const dm = document.getElementById('stats-dm-input').value;
+    const hasData = zt !== '' || dt !== '' || dm !== '';
+    if (hasData) {
+        state.marketStats[statsDateTarget] = {
+            zt: zt !== '' ? parseInt(zt) : null,
+            dt: dt !== '' ? parseInt(dt) : null,
+            dm: dm !== '' ? parseInt(dm) : null
+        };
+    } else {
+        delete state.marketStats[statsDateTarget];
+    }
+    saveState();
+    closeMarketStatsModal();
+    renderGrid();
+}
+function removeMarketStats() {
+    if (!statsDateTarget) return;
+    delete state.marketStats[statsDateTarget];
+    saveState();
+    closeMarketStatsModal();
+    renderGrid();
+}
+function closeMarketStatsModal() {
+    document.getElementById('market-stats-modal').classList.remove('show');
+    statsDateTarget = null;
+}
+
+// ===== Opportunity Prediction Modal =====
+let oppRow = null;
+let oppDate = null;
+let oppType = null; // 'predict' or 'result'
+let oppDraftStocks = ['', '', ''];
+let oppDraftResults = ['', '', ''];
+
+function openOppModal(row, date, type) {
+    oppRow = row;
+    oppDate = date;
+    oppType = type;
+    
+    const dateLabel = formatDateShort(date) + ' ' + formatWeekday(date);
+    const rowLabel = row === 'row1' ? '预测一' : '预测二';
+    
+    if (type === 'predict') {
+        document.getElementById('opp-modal-title').textContent = '📈 预测股票';
+        document.getElementById('opp-modal-hint').textContent = rowLabel + ' - ' + dateLabel + ' - 输入预测的股票名称（最多3只）';
+        const stocks = state.oppPredict[row][date] || [];
+        oppDraftStocks = [stocks[0] || '', stocks[1] || '', stocks[2] || ''];
+        let html = '<div style="display:flex;flex-direction:column;gap:8px">';
+        for (let i = 0; i < 3; i++) {
+            html += '<input type="text" id="opp-stock-' + i + '" value="' + oppDraftStocks[i].replace(/"/g, '&quot;') + '" placeholder="股票' + (i+1) + '（选填）" maxlength="10" style="width:100%;padding:8px 10px;background:#0d1117;border:1px solid #30363d;border-radius:6px;color:#e6edf3;font-size:13px;outline:none">';
+        }
+        html += '</div>';
+        document.getElementById('opp-modal-body').innerHTML = html;
+    } else {
+        document.getElementById('opp-modal-title').textContent = '📊 验证结果';
+        document.getElementById('opp-modal-hint').textContent = rowLabel + ' - ' + dateLabel + ' - 逐一标注每只股票的盈亏';
+        const resultKey = row === 'row1' ? 'row1Result' : 'row2Result';
+        const results = state.oppPredict[resultKey][date] || [];
+        oppDraftResults = [results[0] || '', results[1] || '', results[2] || ''];
+        let html = '<div style="display:flex;flex-direction:column;gap:10px">';
+        for (let i = 0; i < 3; i++) {
+            const val = oppDraftResults[i];
+            html += '<div style="display:flex;align-items:center;gap:10px">';
+            html += '<span style="width:60px;font-size:12px;color:#c9d1d9">股票' + (i+1) + '</span>';
+            html += '<button class="btn" id="opp-res-' + i + '-win" onclick="selectOppResult(' + i + ',\'盈\')" style="flex:1;padding:10px;font-size:14px;font-weight:700;border-radius:6px;';
+            html += val === '盈' ? 'background:rgba(218,54,51,0.2);color:#da3633;border:2px solid #da3633' : 'background:#0d1117;color:#8b949e;border:1px solid #30363d';
+            html += '">盈</button>';
+            html += '<button class="btn" id="opp-res-' + i + '-lose" onclick="selectOppResult(' + i + ',\'亏\')" style="flex:1;padding:10px;font-size:14px;font-weight:700;border-radius:6px;';
+            html += val === '亏' ? 'background:rgba(35,134,54,0.2);color:#238636;border:2px solid #238636' : 'background:#0d1117;color:#8b949e;border:1px solid #30363d';
+            html += '">亏</button>';
+            html += '</div>';
+        }
+        html += '</div>';
+        document.getElementById('opp-modal-body').innerHTML = html;
+    }
+    
+    const resultKey = row === 'row1' ? 'row1Result' : 'row2Result';
+    const hasData = type === 'predict' ? 
+        ((state.oppPredict[row][date] || []).length > 0) :
+        ((state.oppPredict[resultKey][date] || []).length > 0);
+    document.getElementById('opp-remove-btn').style.display = hasData ? '' : 'none';
+    document.getElementById('opp-modal').classList.add('show');
+    if (type === 'predict') setTimeout(() => document.getElementById('opp-stock-0').focus(), 100);
+}
+
+function selectOppResult(idx, val) {
+    oppDraftResults[idx] = val;
+    document.getElementById('opp-res-' + idx + '-win').style.cssText = 'flex:1;padding:10px;font-size:14px;font-weight:700;border-radius:6px;' + (val === '盈' ? 'background:rgba(218,54,51,0.2);color:#da3633;border:2px solid #da3633' : 'background:#0d1117;color:#8b949e;border:1px solid #30363d');
+    document.getElementById('opp-res-' + idx + '-lose').style.cssText = 'flex:1;padding:10px;font-size:14px;font-weight:700;border-radius:6px;' + (val === '亏' ? 'background:rgba(35,134,54,0.2);color:#238636;border:2px solid #238636' : 'background:#0d1117;color:#8b949e;border:1px solid #30363d');
+}
+
+function saveOppData() {
+    if (!oppDate) return;
+    if (oppType === 'predict') {
+        const stocks = [];
+        for (let i = 0; i < 3; i++) {
+            const v = document.getElementById('opp-stock-' + i).value.trim();
+            if (v) stocks.push(v);
+        }
+        if (stocks.length > 0) {
+            state.oppPredict[oppRow][oppDate] = stocks;
+        } else {
+            delete state.oppPredict[oppRow][oppDate];
+        }
+    } else {
+        const resultKey = oppRow === 'row1' ? 'row1Result' : 'row2Result';
+        const results = oppDraftResults.filter(r => r);
+        if (results.length > 0) {
+            state.oppPredict[resultKey][oppDate] = oppDraftResults;
+        } else {
+            delete state.oppPredict[resultKey][oppDate];
+        }
+    }
+    saveState();
+    closeOppModal();
+    renderGrid();
+}
+
+function removeOppData() {
+    if (!oppDate) return;
+    if (oppType === 'predict') {
+        delete state.oppPredict[oppRow][oppDate];
+    } else {
+        const resultKey = oppRow === 'row1' ? 'row1Result' : 'row2Result';
+        delete state.oppPredict[resultKey][oppDate];
+    }
+    saveState();
+    closeOppModal();
+    renderGrid();
+}
+
+function closeOppModal() {
+    document.getElementById('opp-modal').classList.remove('show');
+    oppRow = null; oppDate = null; oppType = null;
+}
+
+let calendarYear = new Date().getFullYear();
+let calendarMonth = new Date().getMonth();
+
+
+
+// ===== Init =====
+function init() {
+    loadState();
+    // 自动从云端加载（如果有绑定token）
+    if (getGhToken()) {
+        ghLoadData().then(cloudData => {
+            if (cloudData && cloudData.themes && cloudData.themes.length > 0) {
+                state = {
+                    themes: cloudData.themes || [],
+                    data: cloudData.data || {},
+                    stocks: cloudData.stocks || {},
+                    holidays: cloudData.holidays || [],
+                    marketAtm: cloudData.marketAtm || {},
+                    stockData: cloudData.stockData || {},
+                    markedDates: cloudData.markedDates || {},
+                    dailyNotes: cloudData.dailyNotes || {},
+                    dailyPredictions: cloudData.dailyPredictions || {},
+                    marketPhases: cloudData.marketPhases || {},
+                    phaseNotes: cloudData.phaseNotes || {},
+                    charStyle: cloudData.charStyle || {},
+                    marketStats: cloudData.marketStats || {},
+                    oppPredict: cloudData.oppPredict || {}
+                };
+                saveState();
+                windowEndDate = getRecentTradingDay();
+                renderLibrary();
+                renderGrid();
+                console.log('Cloud data loaded');
+            }
+        }).catch(()=>{});
+    } else {
+        // 没有token时，尝试从同域data.json加载
+        fetch('./data.json?t=' + Date.now(), {cache: 'no-cache'})
+            .then(resp => resp.ok ? resp.json() : null)
+            .then(data => {
+                if (data && data.themes && data.themes.length > 0) {
+                    state = {
+                        themes: data.themes || [],
+                        data: data.data || {},
+                        stocks: data.stocks || {},
+                        holidays: data.holidays || [],
+                        marketAtm: data.marketAtm || {},
+                        stockData: data.stockData || {},
+                        markedDates: data.markedDates || {},
+                        dailyNotes: data.dailyNotes || {},
+                        dailyPredictions: data.dailyPredictions || {},
+                        marketPhases: data.marketPhases || {},
+                        phaseNotes: data.phaseNotes || {},
+                        charStyle: data.charStyle || {},
+                        marketStats: data.marketStats || {},
+                        oppPredict: data.oppPredict || {}
+                    };
+                    windowEndDate = getRecentTradingDay();
+                    renderLibrary();
+                    renderGrid();
+                    console.log('Local data.json loaded');
+                }
+            })
+            .catch(()=>{});
+    }
+    windowEndDate = getRecentTradingDay();
+    renderLibrary();
+    renderGrid();
+}
+
+// ===== Library Modal =====
+function openLibraryModal() {
+    renderLibrary();
+    document.getElementById('library-modal').classList.add('show');
+    setTimeout(() => document.getElementById('new-theme-name').focus(), 100);
+}
+function closeLibraryModal() {
+    document.getElementById('library-modal').classList.remove('show');
+}
+
+// ===== Guide Modal =====
+let guideArticles = [];
+let expandedGuideId = null;
+
+function loadGuideArticles() {
+    try {
+        guideArticles = JSON.parse(localStorage.getItem('tradingGuideArticles') || '[]');
+    } catch(e) { guideArticles = []; }
+}
+function saveGuideArticles() {
+    localStorage.setItem('tradingGuideArticles', JSON.stringify(guideArticles));
+}
+function openGuideModal() {
+    loadGuideArticles();
+    renderGuideArticles();
+    document.getElementById('guide-modal').classList.add('show');
+}
+function closeGuideModal() {
+    // Save any expanded article content before closing
+    saveCurrentEditingArticle();
+    document.getElementById('guide-modal').classList.remove('show');
+}
+function addGuideArticle() {
+    const titleInput = document.getElementById('new-guide-title');
+    const title = titleInput.value.trim();
+    if (!title) { titleInput.focus(); return; }
+    const id = Date.now();
+    guideArticles.push({ id, title, content: '' });
+    saveGuideArticles();
+    titleInput.value = '';
+    expandedGuideId = id;
+    renderGuideArticles();
+}
+function deleteGuideArticle(id) {
+    if (!confirm('确定删除这篇文章？')) return;
+    guideArticles = guideArticles.filter(a => a.id !== id);
+    if (expandedGuideId === id) expandedGuideId = null;
+    saveGuideArticles();
+    renderGuideArticles();
+}
+function toggleGuideArticle(id) {
+    saveCurrentEditingArticle();
+    expandedGuideId = expandedGuideId === id ? null : id;
+    renderGuideArticles();
+}
+function saveCurrentEditingArticle() {
+    if (expandedGuideId === null) return;
+    const textarea = document.getElementById('guide-edit-content');
+    if (!textarea) return;
+    const article = guideArticles.find(a => a.id === expandedGuideId);
+    if (article) {
+        article.content = textarea.value;
+        saveGuideArticles();
+    }
+}
+function renderGuideArticles() {
+    const container = document.getElementById('guide-articles-list');
+    if (!container) return;
+    if (guideArticles.length === 0) {
+        container.innerHTML = '<div style="text-align:center;color:#8b949e;padding:40px 0">暂无文章，输入标题后点击「+ 新文章」添加</div>';
+        return;
+    }
+    container.innerHTML = guideArticles.map(a => {
+        const isExpanded = expandedGuideId === a.id;
+        return `
+        <div style="background:#161b22;border:1px solid #30363d;border-radius:8px;margin-bottom:10px;overflow:hidden">
+            <div onclick="toggleGuideArticle(${a.id})" style="padding:10px 14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;background:#1c2128;hover:background:#21262d">
+                <span style="font-weight:600;color:#58a6ff;font-size:14px">${escHtml(a.title)}</span>
+                <div style="display:flex;gap:8px;align-items:center">
+                    <span style="color:#8b949e;font-size:12px">${isExpanded ? '▲ 收起' : '▼ 展开'}</span>
+                    <button class="btn btn-sm" onclick="event.stopPropagation();deleteGuideArticle(${a.id})" style="padding:2px 8px;font-size:11px;color:#f85149;border-color:#f8514940">✕</button>
+                </div>
+            </div>
+            ${isExpanded ? `
+            <div style="padding:12px 14px">
+                <textarea id="guide-edit-content" style="width:100%;min-height:300px;background:#0d1117;border:1px solid #30363d;border-radius:6px;color:#c9d1d9;padding:10px;font-size:14px;line-height:1.7;resize:vertical;font-family:inherit" placeholder="在这里写文章内容...">${escHtml(a.content)}</textarea>
+            </div>
+            ` : ''}
+        </div>`;
+    }).join('');
+}
+function escHtml(s) {
+    return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function loadState() {
+    try {
+        let saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+        
+        // If no data under current key, try old key 'themeStrengthData'
+        if (!saved.themes || saved.themes.length === 0) {
+            const oldData = localStorage.getItem('themeStrengthData');
+            if (oldData) {
+                try {
+                    const parsed = JSON.parse(oldData);
+                    // Detect old format: {date: [{name, status}, ...], ...}
+                    const firstKey = Object.keys(parsed)[0];
+                    if (firstKey && Array.isArray(parsed[firstKey]) && parsed[firstKey][0] && parsed[firstKey][0].name) {
+                        console.log('[Migration] Found old format themeStrengthData, converting...');
+                        // Convert old format to new format
+                        const themeNames = new Set();
+                        const newData = {};
+                        const newStocks = {};
+                        const newCharStyle = {};
+                        Object.keys(parsed).forEach(date => {
+                            newCharStyle[date] = parsed[date];
+                            parsed[date].forEach(item => {
+                                themeNames.add(item.name);
+                                if (!newData[item.name]) newData[item.name] = {};
+                                newData[item.name][date] = item.status;
+                            });
+                        });
+                        saved = {
+                            themes: [...themeNames],
+                            data: newData,
+                            stocks: {},
+                            charStyle: newCharStyle,
+                            holidays: saved.holidays || [],
+                            marketAtm: saved.marketAtm || {},
+                            stockData: saved.stockData || {},
+                            markedDates: saved.markedDates || {},
+                            dailyNotes: saved.dailyNotes || {},
+                            dailyPredictions: saved.dailyPredictions || {},
+                            marketPhases: saved.marketPhases || {},
+                            phaseNotes: saved.phaseNotes || {},
+                            marketStats: saved.marketStats || {},
+                            oppPredict: saved.oppPredict || { row1: {}, row1Result: {}, row2: {}, row2Result: {} }
+                        };
+                        // Save migrated data to current key
+                        localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+                        console.log('[Migration] Done! Themes:', saved.themes);
+                    }
+                } catch(e2) { console.error('[Migration] Error:', e2); }
+            }
+        }
+        
+        // If still no themes, use defaults
+        state.themes = saved.themes && saved.themes.length > 0 ? saved.themes : [...DEFAULT_THEMES];
+        state.data = saved.data || {};
+        state.stocks = saved.stocks || {};
+        state.holidays = saved.holidays || [];
+        state.marketAtm = saved.marketAtm || {};
+        state.stockData = saved.stockData || {};
+        state.markedDates = saved.markedDates || {};
+        state.dailyNotes = saved.dailyNotes || {};
+        state.dailyPredictions = saved.dailyPredictions || {};
+        state.marketPhases = saved.marketPhases || {};
+        state.phaseNotes = saved.phaseNotes || {};
+        state.charStyle = saved.charStyle || {};
+        state.marketStats = saved.marketStats || {};
+        state.oppPredict = saved.oppPredict || { row1: {}, row1Result: {}, row2: {}, row2Result: {} };
+    } catch(e) { state = { themes: [], data: {}, stocks: {}, holidays: [], marketAtm: {}, stockData: {}, markedDates: {}, dailyNotes: {}, dailyPredictions: {}, marketPhases: {}, phaseNotes: {}, charStyle: {}, marketStats: {}, oppPredict: { row1: {}, row1Result: {}, row2: {}, row2Result: {} } }; }
+}
+
+function saveState() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    // 云端同步（异步，不阻塞）
+    if (getGhToken()) { ghSaveData().catch(()=>{}); }
+}
+
+// ===== Date helpers =====
+function formatDate(d) {
+    const y = d.getFullYear();
+    const m = String(d.getMonth()+1).padStart(2,'0');
+    const day = String(d.getDate()).padStart(2,'0');
+    return `${y}-${m}-${day}`;
+}
+function parseDate(s) { return new Date(s + 'T00:00:00'); }
+function addDays(dateStr, n) {
+    const d = parseDate(dateStr);
+    d.setDate(d.getDate() + n);
+    return formatDate(d);
+}
+function isWeekend(dateStr) {
+    const d = parseDate(dateStr);
+    return d.getDay() === 0 || d.getDay() === 6;
+}
+function isHoliday(dateStr) {
+    return state.holidays.includes(dateStr);
+}
+function isTradingDay(dateStr) {
+    return !isWeekend(dateStr) && !isHoliday(dateStr);
+}
+function getRecentTradingDay() {
+    let d = formatDate(new Date());
+    let safety = 0;
+    while (!isTradingDay(d) && safety < 30) {
+        d = addDays(d, -1);
+        safety++;
+    }
+    return d;
+}
+function getPrevTradingDay(dateStr) {
+    let d = addDays(dateStr, -1);
+    let safety = 0;
+    while (!isTradingDay(d) && safety < 30) {
+        d = addDays(d, -1);
+        safety++;
+    }
+    return d;
+}
+function getNextTradingDay(dateStr) {
+    const today = formatDate(new Date());
+    let d = addDays(dateStr, 1);
+    let safety = 0;
+    while (!isTradingDay(d) && d <= today && safety < 30) {
+        d = addDays(d, 1);
+        safety++;
+    }
+    if (d > today) return null;
+    if (!isTradingDay(d)) return null;
+    return d;
+}
+function getTradingDays(endDate, count) {
+    const dates = [];
+    let current = endDate;
+    let safety = 0;
+    while (dates.length < count && safety < 60) {
+        if (isTradingDay(current)) {
+            dates.unshift(current);
+        }
+        current = addDays(current, -1);
+        safety++;
+    }
+    return dates;
+}
+function shiftTradingDays(dateStr, n) {
+    let d = dateStr;
+    const step = n > 0 ? 1 : -1;
+    let found = 0;
+    let safety = 0;
+    while (found < Math.abs(n) && safety < 60) {
+        d = addDays(d, step);
+        if (isTradingDay(d)) found++;
+        safety++;
+        if (d < '2020-01-01') return null;
+    }
+    return d;
+}
+function getWindowDates() {
+    return getTradingDays(windowEndDate, 5);
+}
+function formatDateShort(dateStr) {
+    const parts = dateStr.split('-');
+    return `${parseInt(parts[1])}/${parseInt(parts[2])}`;
+}
+function formatWeekday(dateStr) {
+    const d = parseDate(dateStr);
+    const weekdays = ['日','一','二','三','四','五','六'];
+    return '周' + weekdays[d.getDay()];
+}
+function isToday(dateStr) {
+    return dateStr === formatDate(new Date());
+}
+
+// ===== Theme Library =====
+function addTheme() {
+    const input = document.getElementById('new-theme-name');
+    const name = input.value.trim();
+    if (!name) { showToast('请输入题材名称', true); return; }
+    if (state.themes.includes(name)) { showToast('该题材已存在', true); return; }
+    state.themes.push(name);
+    state.data[name] = {};
+    state.stocks[name] = [];
+    saveState();
+    input.value = '';
+    expandedTheme = name;
+    renderLibrary();
+    renderGrid();
+    showToast('已添加');
+}
+
+function deleteTheme(name) {
+    if (!confirm('确定删除「' + name + '」及其所有数据吗？')) return;
+    try {
+        (state.stocks[name] || []).forEach(function(stock) {
+            delete state.stockData[name + '::' + stock];
+        });
+        state.themes = state.themes.filter(function(t) { return t !== name; });
+        delete state.data[name];
+        delete state.stocks[name];
+        if (expandedTheme === name) expandedTheme = null;
+        if (detailTheme === name) { detailTheme = null; currentView = 'main'; }
+        saveState();
+        renderLibrary();
+        renderGrid();
+        showToast('已删除');
+    } catch(e) {
+        alert('删除出错: ' + e.message);
+    }
+}
+
+function toggleThemeExpand(name) {
+    expandedTheme = (expandedTheme === name) ? null : name;
+    renderLibrary();
+}
+
+function addStock(theme) {
+    const input = document.getElementById(`stock-input-${CSS.escape(theme)}`);
+    if (!input) return;
+    const name = input.value.trim();
+    if (!name) return;
+    if (!state.stocks[theme]) state.stocks[theme] = [];
+    if (state.stocks[theme].includes(name)) { showToast('该个股已存在', true); return; }
+    state.stocks[theme].push(name);
+    saveState();
+    input.value = '';
+    renderLibrary();
+    renderGrid();
+}
+
+function deleteStock(theme, index) {
+    if (!state.stocks[theme]) return;
+    const stockName = state.stocks[theme][index];
+    state.stocks[theme].splice(index, 1);
+    delete state.stockData[`${theme}::${stockName}`];
+    saveState();
+    renderLibrary();
+    renderGrid();
+}
+
+
+function editThemeName(oldName, el) {
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.value = oldName;
+    input.maxLength = 12;
+    input.style.cssText = 'width:80px;padding:2px 6px;background:#0d1117;border:1px solid #58a6ff;border-radius:4px;color:#e6edf3;font-size:12px;outline:none';
+    input.onclick = function(e) { e.stopPropagation(); };
+    el.replaceWith(input);
+    input.focus();
+    input.select();
+    
+    function save() {
+        const newName = input.value.trim();
+        if (!newName || newName === oldName) { renderLibrary(); return; }
+        if (state.themes.includes(newName)) { showToast('题材已存在', true); renderLibrary(); return; }
+        // Rename in all data structures
+        const idx = state.themes.indexOf(oldName);
+        if (idx > -1) state.themes[idx] = newName;
+        if (state.data[oldName]) { state.data[newName] = state.data[oldName]; delete state.data[oldName]; }
+        if (state.stocks[oldName]) { state.stocks[newName] = state.stocks[oldName]; delete state.stocks[oldName]; }
+        // Update expandedTheme
+        if (expandedTheme === oldName) expandedTheme = newName;
+        saveState();
+        renderLibrary();
+        renderGrid();
+    }
+    
+    input.onblur = save;
+    input.onkeydown = function(e) {
+        if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
+        if (e.key === 'Escape') { renderLibrary(); }
+    };
+}
+
+function renderLibrary() {
+    const container = document.getElementById('theme-list');
+    if (state.themes.length === 0) {
+        container.innerHTML = '<div class="empty-library">题材库为空，请添加题材</div>';
+        return;
+    }
+    container.innerHTML = state.themes.map(name => {
+        const dataCount = Object.keys(state.data[name] || {}).length;
+        const stockCount = (state.stocks[name] || []).length;
+        const expanded = expandedTheme === name;
+        let stocksHtml = '';
+        if (expanded) {
+            const stocks = state.stocks[name] || [];
+            let stockTags = '';
+            if (stocks.length > 0) {
+                stockTags = '<div class="stock-list">' + stocks.map((s, i) =>
+                    `<span class="stock-tag">${s}<span class="x" onclick="event.stopPropagation();deleteStock('${name.replace(/'/g,"\\'")}',${i})">×</span></span>`
+                ).join('') + '</div>';
+            } else {
+                stockTags = '<div class="no-stocks">暂无个股，请添加</div>';
+            }
+            stocksHtml = `
+                <div class="theme-stocks" onclick="event.stopPropagation()">
+                    ${stockTags}
+                    <div class="stock-add-row">
+                        <input type="text" id="stock-input-${CSS.escape(name)}" placeholder="个股名称" maxlength="10"
+                               onkeydown="if(event.key==='Enter')addStock('${name.replace(/'/g,"\\'")}')">
+                        <button class="btn btn-primary btn-sm" onclick="addStock('${name.replace(/'/g,"\\'")}')">+</button>
+                    </div>
+                </div>
+            `;
+        }
+        return `
+            <div class="theme-item ${expanded ? 'expanded' : ''}">
+                <div class="theme-item-header" onclick="toggleThemeExpand('${name.replace(/'/g,"\\'")}')">
+                    <span class="theme-arrow">▶</span>
+                    <span class="theme-item-name" title="${name}" ondblclick="event.stopPropagation();editThemeName('${name.replace(/'/g,"\\'")}', this)">${name}</span>
+                    ${stockCount > 0 ? `<span class="theme-stock-count">${stockCount}只</span>` : ''}
+                    <span class="theme-item-count">${dataCount}天</span>
+                    <button class="delete-btn" onclick="event.stopPropagation();deleteTheme('${name.replace(/'/g,"\\'")}')">×</button>
+                </div>
+                ${stocksHtml}
+            </div>
+        `;
+    }).join('');
+}
+
+// ===== Cell toggle =====
+function toggleMarketCell(date) {
+    const current = state.marketAtm[date];
+    if (!current) {
+        state.marketAtm[date] = '强';
+    } else if (current === '强') {
+        state.marketAtm[date] = '稳';
+    } else if (current === '稳') {
+        state.marketAtm[date] = '弱';
+    } else {
+        delete state.marketAtm[date];
+    }
+    saveState();
+    renderGrid();
+}
+
+function toggleCell(theme, date) {
+    if (!state.data[theme]) state.data[theme] = {};
+    const current = state.data[theme][date];
+    if (!current) {
+        state.data[theme][date] = '强';
+    } else if (current === '强') {
+        state.data[theme][date] = '稳';
+    } else if (current === '稳') {
+        state.data[theme][date] = '弱';
+    } else {
+        delete state.data[theme][date];
+    }
+    saveState();
+    const wrap = document.querySelector('.detail-grid-wrap');
+    const sl = wrap ? wrap.scrollLeft : 0;
+    renderLibrary();
+    renderGrid();
+    const newWrap = document.querySelector('.detail-grid-wrap');
+    if (newWrap) newWrap.scrollLeft = sl;
+}
+
+function toggleStockCell(theme, stock, date) {
+    const key = `${theme}::${stock}`;
+    if (!state.stockData[key]) state.stockData[key] = {};
+    const current = state.stockData[key][date];
+    if (!current) {
+        state.stockData[key][date] = '强';
+    } else if (current === '强') {
+        state.stockData[key][date] = '稳';
+    } else if (current === '稳') {
+        state.stockData[key][date] = '弱';
+    } else {
+        delete state.stockData[key][date];
+    }
+    saveState();
+    const wrap = document.querySelector('.detail-grid-wrap');
+    const sl = wrap ? wrap.scrollLeft : 0;
+    renderGrid();
+    const newWrap = document.querySelector('.detail-grid-wrap');
+    if (newWrap) newWrap.scrollLeft = sl;
+}
+
+// ===== Date navigation =====
+function shiftWindow(direction) {
+    if (direction < 0) {
+        const newEnd = getPrevTradingDay(windowEndDate);
+        if (newEnd && newEnd >= '2020-01-01') {
+            windowEndDate = newEnd;
+            renderGrid();
+        } else {
+            showToast('没有更早的交易日了', true);
+        }
+    } else {
+        const newEnd = getNextTradingDay(windowEndDate);
+        if (newEnd) {
+            windowEndDate = newEnd;
+            renderGrid();
+        } else {
+            showToast('已经是最近的交易日了', true);
+        }
+    }
+}
+
+function jumpToToday() {
+    windowEndDate = getRecentTradingDay();
+    renderGrid();
+}
+
+function jumpToDate(dateStr) {
+    if (!dateStr) return;
+    let d = dateStr;
+    let safety = 0;
+    while (!isTradingDay(d) && d >= '2020-01-01' && safety < 30) {
+        d = addDays(d, -1);
+        safety++;
+    }
+    windowEndDate = d;
+    renderGrid();
+}
+
+// ===== Grid rendering =====
+function renderGrid() {
+    if (currentView === 'themeDetail' && detailTheme) {
+        document.querySelector('.date-nav').style.display = 'none';
+        document.querySelector('.viz-panel .panel-title').textContent = '📈 题材详情';
+        renderThemeDetail(detailTheme);
+        return;
+    }
+    document.querySelector('.date-nav').style.display = '';
+    renderMainView();
+}
+
+function openThemeDetail(name) {
+    currentView = 'themeDetail';
+    detailTheme = name;
+    renderGrid();
+}
+
+function closeThemeDetail() {
+    currentView = 'main';
+    detailTheme = null;
+    renderGrid();
+}
+
+function renderMainView() {
+    const content = document.getElementById('viz-content');
+    const dates = getWindowDates();
+
+    document.getElementById('date-range-text').textContent =
+        `${formatDateShort(dates[0])} ~ ${formatDateShort(dates[dates.length-1])}`;
+
+    if (state.themes.length === 0) {
+        content.innerHTML = '<div class="empty-state">请先在左侧题材库添加题材</div>';
+        return;
+    }
+
+    let html = '<div class="grid-wrap"><div class="grid-container">';
+
+    // Header
+    html += '<div class="grid-header"><div></div>';
+    dates.forEach(d => {
+        const todayCls = isToday(d) ? ' today-col' : '';
+        const marked = state.markedDates[d];
+        const markedCls = marked ? ' marked-col-head' : '';
+        const markLabel = marked ? `<div class="mark-label">${marked}</div>` : '';
+        const phase = state.marketPhases[d];
+        let phaseHtml = '';
+        if (phase) {
+            const pc = phase === '孕育期' ? 'yunyu' : phase === '主升期' ? 'zhusheng' : phase === '震荡期' ? 'zhendang' : 'tuichao';
+            phaseHtml = `<div class="phase-indicator ${pc}" onclick="event.stopPropagation();cyclePhaseInGrid('${d}')" title="点击切换周期">${phase}</div>`;
+        } else {
+            phaseHtml = `<div class="phase-indicator phase-empty" onclick="event.stopPropagation();cyclePhaseInGrid('${d}')" title="点击设置周期">+周期</div>`;
+        }
+        html += `<div class="${todayCls}${markedCls}" style="cursor:pointer" onclick="openMarkDialog('${d}')" title="点击标注关键日">${formatDateShort(d)}<br><span style="font-size:10px;color:#6e7681">${formatWeekday(d)}</span>${markLabel}${phaseHtml}</div>`;
+    });
+    html += '<div>趋势</div></div>';
+
+    // Daily Notes Row (5 columns aligned with date headers)
+    html += '<div class="section-divider"><span>📝 每日记录</span></div>';
+    html += '<div class="grid-row">';
+    html += '<div class="theme-label"><div class="theme-label-name" style="color:#e3b341">记录</div></div>';
+    dates.forEach(d => {
+        const title = state.dailyNotes[d] || '';
+        const todayCls = isToday(d) ? ' cell-today' : '';
+        const marked = state.markedDates[d];
+        const markedCls = marked ? ' marked-cell' : '';
+        const displayText = title ? title.substring(0, 16) + (title.length > 16 ? '...' : '') : '';
+        const cellCls = title ? 'daily-note-cell' : 'daily-note-cell daily-note-empty';
+        const safeTitle = title.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        html += '<div class="cell cell-none' + todayCls + markedCls + ' ' + cellCls + '" onclick="openNoteModal(\'' + d + '\')" title="' + safeTitle + '">' + (displayText || '<span style=color:#484f58>-</span>') + '</div>';
+    });
+    html += '<div class="trend-icon"></div>';
+    html += '</div>';
+
+    // Character Style Row (5 columns aligned with date headers)
+    html += '<div class="section-divider"><span>\ud83c\udfad 特征风格</span></div>';
+    html += '<div class="grid-row">';
+    html += '<div class="theme-label"><div class="theme-label-name" style="color:#e3b341">管中窥豹</div></div>';
+    dates.forEach(d => {
+        const stocks = state.charStyle[d] || [];
+        const todayCls = isToday(d) ? ' cell-today' : '';
+        const marked = state.markedDates[d];
+        const markedCls = marked ? ' marked-cell' : '';
+        let cellInner = '';
+        if (stocks.length > 0) {
+            stocks.slice(0, 4).forEach(s => {
+                const cls = s.status === '强' ? 'strong' : 'weak';
+                cellInner += '<span class="char-stock-tag ' + cls + '">' + s.name.substring(0, 4) + '</span>';
+            });
+            if (stocks.length > 4) cellInner += '<span style="font-size:10px;color:#6e7681">+' + (stocks.length - 4) + '</span>';
+        }
+        const cellCls = stocks.length > 0 ? 'char-style-cell' : 'char-style-cell daily-note-empty';
+        html += '<div class="cell cell-none' + todayCls + markedCls + ' ' + cellCls + '" onclick="openCharStyleModal(\'' + d + '\')">' + (cellInner || '<span style=color:#484f58>-</span>') + '</div>';
+    });
+    html += '<div class="trend-icon"></div>';
+    html += '</div>';
+
+    // Market Atmosphere Section
+    html += '<div class="section-divider"><span>🌐 市场氛围</span></div>';
+    html += '<div class="grid-row atm-row">';
+    html += `<div class="theme-label"><div class="theme-label-name" style="color:#e3b341">整体氛围</div></div>`;
+    dates.forEach(d => {
+        const status = state.marketAtm[d];
+        const todayCls = isToday(d) ? ' cell-today' : '';
+        const marked = state.markedDates[d];
+        const markedCls = marked ? ' marked-cell' : '';
+        if (status === '强') {
+            html += `<div class="cell cell-strong${todayCls}${markedCls}" onclick="toggleMarketCell('${d}')">强</div>`;
+        } else if (status === '稳') {
+            html += `<div class="cell cell-stable${todayCls}${markedCls}" onclick="toggleMarketCell('${d}')">稳</div>`;
+        } else if (status === '弱') {
+            html += `<div class="cell cell-weak${todayCls}${markedCls}" onclick="toggleMarketCell('${d}')">弱</div>`;
+        } else {
+            html += `<div class="cell cell-none${todayCls}${markedCls}" onclick="toggleMarketCell('${d}')">-</div>`;
+        }
+    });
+    const atmTrend = calcMarketTrend(dates);
+    html += `<div class="trend-icon">${atmTrend}</div>`;
+    html += '</div>';
+
+    // Market Stats Row (涨停/跌停/大面)
+    html += '<div class="grid-row atm-row">';
+    html += '<div class="theme-label"><div class="theme-label-name" style="color:#e3b341;font-size:10px">涨跌统计</div></div>';
+    dates.forEach(d => {
+        const stats = state.marketStats[d] || {};
+        const todayCls = isToday(d) ? ' cell-today' : '';
+        const marked = state.markedDates[d];
+        const markedCls = marked ? ' marked-cell' : '';
+        const ztVal = stats.zt != null ? stats.zt : '';
+        const dtVal = stats.dt != null ? stats.dt : '';
+        const dmVal = stats.dm != null ? stats.dm : '';
+        const hasData = ztVal !== '' || dtVal !== '' || dmVal !== '';
+        html += '<div class="cell cell-none' + todayCls + markedCls + ' market-stats-cell" onclick="openMarketStatsModal(\'' + d + '\')">' +
+            (hasData ? '<span class="stat-zt">涨停 ' + (ztVal !== '' ? ztVal : '-') + '</span><span class="stat-dt">跌停 ' + (dtVal !== '' ? dtVal : '-') + '</span><span class="stat-dm">大面 ' + (dmVal !== '' ? dmVal : '-') + '</span>' : '<span style=color:#484f58>-</span>') +
+            '</div>';
+    });
+    html += '<div class="trend-icon"></div>';
+    html += '</div>';
+
+    // Theme Section (collapsible)
+    const collapseCls = themesCollapsed ? '' : ' expanded';
+    const bodyCls = themesCollapsed ? '' : ' show';
+    const themeCount = state.themes.length;
+    html += '<div class="section-divider collapsible' + collapseCls + '" onclick="toggleThemesCollapse()"><span class="collapse-arrow">▶</span><span>📚 题材强度（' + themeCount + '）</span></div>';
+    html += '<div class="themes-body' + bodyCls + '">';
+
+    // Rows
+    state.themes.forEach(name => {
+        const stocks = (state.stocks[name] || []);
+        const safeName = name.replace(/'/g, "\\'");
+
+        // Theme row (clickable to open detail)
+        html += '<div class="grid-row">';
+        html += `<div class="theme-label theme-clickable" onclick="openThemeDetail('${safeName}')" title="点击查看详情">`;
+        html += `<div class="theme-label-name">${name}</div>`;
+        html += `<div class="theme-label-sub">${stocks.length > 0 ? stocks.length + '只个股 →' : '点击查看 →'}</div>`;
+        html += `</div>`;
+
+        dates.forEach(d => {
+            const status = state.data[name] && state.data[name][d];
+            const todayCls = isToday(d) ? ' cell-today' : '';
+            const marked = state.markedDates[d];
+            const markedCls = marked ? ' marked-cell' : '';
+            if (status === '强') {
+                html += `<div class="cell cell-strong${todayCls}${markedCls}" onclick="toggleCell('${safeName}','${d}')">强</div>`;
+            } else if (status === '稳') {
+                html += `<div class="cell cell-stable${todayCls}${markedCls}" onclick="toggleCell('${safeName}','${d}')">稳</div>`;
+            } else if (status === '弱') {
+                html += `<div class="cell cell-weak${todayCls}${markedCls}" onclick="toggleCell('${safeName}','${d}')">弱</div>`;
+            } else {
+                html += `<div class="cell cell-none${todayCls}${markedCls}" onclick="toggleCell('${safeName}','${d}')">-</div>`;
+            }
+        });
+
+        const trend = calcTrend(name, dates);
+        html += `<div class="trend-icon">${trend}</div>`;
+        html += '</div>';
+    });
+
+    html += '</div>'; // close themes-body
+    html += '</div></div>';
+
+    // Opportunity Prediction Section
+    html += '<div class="section-divider"><span>\ud83c\udfaf 机会预测</span></div>';
+    // Row 1: pairs (dates[0],dates[1]), (dates[2],dates[3]), (dates[4],dates[5])...
+    html += '<div class="grid-row atm-row">';
+    html += '<div class="theme-label" style="visibility:hidden"><div class="theme-label-name" style="font-size:10px">.</div></div>';
+    dates.forEach((d, i) => {
+        const todayCls = isToday(d) ? ' cell-today' : '';
+        const marked = state.markedDates[d];
+        const markedCls = marked ? ' marked-cell' : '';
+        const isPredict = (i % 2 === 0);
+        const pairCls = isPredict ? ' opp-pair-left' : ' opp-pair-right';
+        let cellContent = '';
+        if (isPredict) {
+            const stocks = (state.oppPredict.row1[d] || []);
+            if (stocks.length > 0) {
+                stocks.forEach(s => {
+                    cellContent += '<span class="opp-stock-name">' + s + '</span>';
+                });
+            } else {
+                cellContent = '<span style="color:#484f58">预测</span>';
+            }
+            html += '<div class="cell cell-none' + todayCls + markedCls + pairCls + ' opp-predict-cell" onclick="openOppModal(\'row1\',\'' + d + '\',\'predict\')">' + cellContent + '</div>';
+        } else {
+            const results = (state.oppPredict.row1Result[d] || []);
+            if (results.length > 0) {
+                results.forEach((r, idx) => {
+                    if (r) {
+                        const cls = r === '盈' ? 'win' : 'lose';
+                        cellContent += '<span class="opp-result-item ' + cls + '">' + (r === '盈' ? '\u2713' : '\u2717') + '</span>';
+                    }
+                });
+                if (!cellContent) cellContent = '<span style="color:#484f58">验证</span>';
+            } else {
+                cellContent = '<span style="color:#484f58">验证</span>';
+            }
+            html += '<div class="cell cell-none' + todayCls + markedCls + pairCls + ' opp-predict-cell" onclick="openOppModal(\'row1\',\'' + d + '\',\'result\')">' + cellContent + '</div>';
+        }
+    });
+    html += '<div class="trend-icon"></div>';
+    html += '</div>';
+    // Row 2: pairs (dates[1],dates[2]), (dates[3],dates[4])... offset by 1
+    html += '<div class="grid-row atm-row">';
+    html += '<div class="theme-label" style="visibility:hidden"><div class="theme-label-name" style="font-size:10px">.</div></div>';
+    dates.forEach((d, i) => {
+        const todayCls = isToday(d) ? ' cell-today' : '';
+        const marked = state.markedDates[d];
+        const markedCls = marked ? ' marked-cell' : '';
+        if (i === 0) {
+            // First column in row2 has no pair, show as disabled
+            html += '<div class="cell cell-none' + todayCls + markedCls + ' opp-predict-cell"><span style="color:#484f58;font-size:10px">-</span></div>';
+            return;
+        }
+        const isPredict = (i % 2 === 1);
+        const pairCls = isPredict ? ' opp-pair-left' : ' opp-pair-right';
+        let cellContent = '';
+        if (isPredict) {
+            const stocks = (state.oppPredict.row2[d] || []);
+            if (stocks.length > 0) {
+                stocks.forEach(s => {
+                    cellContent += '<span class="opp-stock-name">' + s + '</span>';
+                });
+            } else {
+                cellContent = '<span style="color:#484f58">预测</span>';
+            }
+            html += '<div class="cell cell-none' + todayCls + markedCls + pairCls + ' opp-predict-cell" onclick="openOppModal(\'row2\',\'' + d + '\',\'predict\')">' + cellContent + '</div>';
+        } else {
+            const results = (state.oppPredict.row2Result[d] || []);
+            if (results.length > 0) {
+                results.forEach((r, idx) => {
+                    if (r) {
+                        const cls = r === '盈' ? 'win' : 'lose';
+                        cellContent += '<span class="opp-result-item ' + cls + '">' + (r === '盈' ? '\u2713' : '\u2717') + '</span>';
+                    }
+                });
+                if (!cellContent) cellContent = '<span style="color:#484f58">验证</span>';
+            } else {
+                cellContent = '<span style="color:#484f58">验证</span>';
+            }
+            html += '<div class="cell cell-none' + todayCls + markedCls + pairCls + ' opp-predict-cell" onclick="openOppModal(\'row2\',\'' + d + '\',\'result\')">' + cellContent + '</div>';
+        }
+    });
+    html += '<div class="trend-icon"></div>';
+    html += '</div>';
+
+
+    // Legend
+    html += '<div class="legend">';
+    html += '<div class="legend-item"><div class="legend-dot strong"></div>强</div>';
+    html += '<div class="legend-item"><div class="legend-dot stable"></div>稳</div>';
+    html += '<div class="legend-item"><div class="legend-dot weak"></div>弱</div>';
+    html += '<div class="legend-item"><div class="legend-dot none"></div>无数据</div>';
+    html += '<div class="legend-item" style="margin-left:auto">⬆️走强 ⬇️走弱 ⚡翻转 ➡️稳定 ★新出</div>';
+    html += '</div>';
+    html += '<div class="click-hint">💡 点击格子切换：空 → 强 → 稳 → 弱 → 清除　|　点击日期表头标注关键日　|　点击题材名称进入详情</div>';
+
+    content.innerHTML = html;
+}
+
+function calcTrend(theme, dates) {
+    const data = state.data[theme] || {};
+    const records = dates.filter(d => data[d]).map(d => ({ date: d, status: data[d] }));
+    if (records.length === 0) return '';
+    if (records.length === 1) return '★';
+    const sorted = records.slice().sort((a,b) => a.date.localeCompare(b.date));
+    const recent = sorted[sorted.length-1];
+    const prev = sorted[sorted.length-2];
+    let strongStreak = 0, weakStreak = 0;
+    for (let i = sorted.length-1; i >= 0; i--) {
+        if (sorted[i].status === '强') { strongStreak++; weakStreak = 0; }
+        else { weakStreak++; strongStreak = 0; }
+        if (strongStreak > 0 && sorted[i].status !== '强') break;
+        if (weakStreak > 0 && sorted[i].status !== '弱') break;
+    }
+    if (strongStreak >= 3) return '⬆️';
+    if (weakStreak >= 3) return '⬇️';
+    if (prev.status !== recent.status) return '⚡';
+    return '➡️';
+}
+
+function calcMarketTrend(dates) {
+    const data = state.marketAtm;
+    const records = dates.filter(d => data[d]).map(d => ({ date: d, status: data[d] }));
+    if (records.length === 0) return '';
+    if (records.length === 1) return '★';
+    const sorted = records.slice().sort((a,b) => a.date.localeCompare(b.date));
+    const recent = sorted[sorted.length-1];
+    const prev = sorted[sorted.length-2];
+    let strongStreak = 0;
+    for (let i = sorted.length-1; i >= 0; i--) {
+        if (sorted[i].status === '强') strongStreak++; else break;
+    }
+    let weakStreak = 0;
+    for (let i = sorted.length-1; i >= 0; i--) {
+        if (sorted[i].status === '弱') weakStreak++; else break;
+    }
+    if (strongStreak >= 3) return '⬆️';
+    if (weakStreak >= 3) return '⬇️';
+    if (prev.status !== recent.status) return '⚡';
+    return '➡️';
+}
+
+function calcStockTrend(stockKey, dates) {
+    const data = state.stockData[stockKey] || {};
+    const records = dates.filter(d => data[d]).map(d => ({ date: d, status: data[d] }));
+    if (records.length === 0) return '';
+    if (records.length === 1) return '★';
+    const sorted = records.slice().sort((a,b) => a.date.localeCompare(b.date));
+    const recent = sorted[sorted.length-1];
+    const prev = sorted[sorted.length-2];
+    let strongStreak = 0;
+    for (let i = sorted.length-1; i >= 0; i--) {
+        if (sorted[i].status === '强') strongStreak++; else break;
+    }
+    let weakStreak = 0;
+    for (let i = sorted.length-1; i >= 0; i--) {
+        if (sorted[i].status === '弱') weakStreak++; else break;
+    }
+    if (strongStreak >= 3) return '⬆️';
+    if (weakStreak >= 3) return '⬇️';
+    if (prev.status !== recent.status) return '⚡';
+    return '➡️';
+}
+
+// ===== Theme Detail View =====
+function getThemeDetailDates(themeName) {
+    const dateSet = new Set();
+    Object.keys(state.data[themeName] || {}).forEach(d => dateSet.add(d));
+    (state.stocks[themeName] || []).forEach(stock => {
+        const key = themeName + '::' + stock;
+        Object.keys(state.stockData[key] || {}).forEach(d => dateSet.add(d));
+    });
+    Object.keys(state.markedDates).forEach(d => dateSet.add(d));
+    // If no data yet but theme/stocks exist, use main window dates
+    if (dateSet.size === 0) {
+        if ((state.stocks[themeName] || []).length > 0 || state.themes.includes(themeName)) {
+            return getWindowDates();
+        }
+        return [];
+    }
+    const sorted = [...dateSet].sort();
+    const start = sorted[0];
+    const end = sorted[sorted.length - 1];
+    const result = [];
+    let current = start;
+    let safety = 0;
+    while (current <= end && safety < 365) {
+        if (isTradingDay(current)) result.push(current);
+        current = addDays(current, 1);
+        safety++;
+    }
+    return result;
+}
+
+function renderThemeDetail(name) {
+    const content = document.getElementById('viz-content');
+    const dates = getThemeDetailDates(name);
+    const stocks = state.stocks[name] || [];
+    const safeName = name.replace(/'/g, "\\'");
+
+    let html = '';
+    html += `<div class="detail-header">`;
+    html += `<button class="btn btn-sm" onclick="closeThemeDetail()">◄ 返回</button>`;
+    html += `<span class="detail-title">${name}</span>`;
+    html += `<span class="detail-stock-count">${stocks.length}只个股</span>`;
+    html += `</div>`;
+
+    if (dates.length === 0) {
+        html += '<div class="empty-state">暂无数据，请在主界面录入后查看</div>';
+        content.innerHTML = html;
+        return;
+    }
+
+    const labelW = 130;
+    const dateW = 76;
+    const gridCols = `${labelW}px repeat(${dates.length}, ${dateW}px)`;
+
+    html += `<div class="detail-grid-wrap">`;
+    html += `<div class="detail-grid" style="--detail-cols:${gridCols}">`;
+
+    // Header
+    html += '<div class="detail-grid-row detail-grid-header">';
+    html += '<div class="detail-row-label">题材 / 个股</div>';
+    dates.forEach(d => {
+        const marked = state.markedDates[d];
+        const markedCls = marked ? ' marked-col-head' : '';
+        const todayCls = isToday(d) ? ' today-col' : '';
+        const markLabel = marked ? `<div class="mark-label">${marked}</div>` : '';
+        html += `<div class="detail-date-cell${markedCls}${todayCls}">
+            ${formatDateShort(d)}<br><span class="detail-weekday">${formatWeekday(d)}</span>${markLabel}
+        </div>`;
+    });
+    html += '</div>';
+
+    // Theme row
+    html += '<div class="detail-grid-row">';
+    html += `<div class="detail-row-label detail-theme-label">${name}</div>`;
+    dates.forEach(d => {
+        const status = state.data[name] && state.data[name][d];
+        const marked = state.markedDates[d];
+        const markedCls = marked ? ' marked-cell' : '';
+        const todayCls = isToday(d) ? ' cell-today' : '';
+        html += renderDetailCell(status, markedCls + todayCls, `toggleCell('${safeName}','${d}')`);
+    });
+    html += '</div>';
+
+    // Stock rows
+    stocks.forEach(stock => {
+        const stockKey = `${name}::${stock}`;
+        const safeStock = stock.replace(/'/g, "\\'");
+        html += '<div class="detail-grid-row detail-stock-row">';
+        html += `<div class="detail-row-label detail-stock-label">└ ${stock}</div>`;
+        dates.forEach(d => {
+            const status = state.stockData[stockKey] && state.stockData[stockKey][d];
+            const marked = state.markedDates[d];
+            const markedCls = marked ? ' marked-cell' : '';
+            const todayCls = isToday(d) ? ' cell-today' : '';
+            html += renderDetailCell(status, markedCls + todayCls, `toggleStockCell('${safeName}','${safeStock}','${d}')`);
+        });
+        html += '</div>';
+    });
+
+    html += '</div></div>';
+    html += '<div class="click-hint">💡 点击格子切换：空 → 强 → 稳 → 弱 → 清除</div>';
+    content.innerHTML = html;
+}
+
+function renderDetailCell(status, extraCls, onclick) {
+    if (status === '强') return `<div class="cell cell-strong detail-cell${extraCls}" onclick="${onclick}">强</div>`;
+    if (status === '稳') return `<div class="cell cell-stable detail-cell${extraCls}" onclick="${onclick}">稳</div>`;
+    if (status === '弱') return `<div class="cell cell-weak detail-cell${extraCls}" onclick="${onclick}">弱</div>`;
+    return `<div class="cell cell-none detail-cell${extraCls}" onclick="${onclick}">-</div>`;
+}
+
+function toggleThemesCollapse() {
+    themesCollapsed = !themesCollapsed;
+    renderGrid();
+}
+
+// ===== Mark Date Dialog =====
+function openMarkDialog(date) {
+    markDateTarget = date;
+    const modal = document.getElementById('mark-modal');
+    modal.dataset.mode = '';
+    modal.querySelector('h3').textContent = '📌 标注关键日';
+    document.getElementById('mark-date-display').textContent = `${date} ${formatWeekday(date)}`;
+    const input = document.getElementById('mark-label-input');
+    input.value = state.markedDates[date] || '';
+    input.placeholder = '输入标注名称（如：大爆发、恐慌日）';
+    document.getElementById('mark-remove-btn').style.display = state.markedDates[date] ? '' : 'none';
+    document.getElementById('mark-remove-btn').onclick = function() { removeMarkDate(); };
+    modal.classList.add('show');
+    setTimeout(() => input.focus(), 100);
+}
+function closeMarkDialog() {
+    document.getElementById('mark-modal').classList.remove('show');
+    document.getElementById('mark-modal').dataset.mode = '';
+    markDateTarget = null;
+    _markFromCalendar = false;
+    // Restore default onclick for remove button
+    document.getElementById('mark-remove-btn').onclick = function() { removeMarkDate(); };
+}
+
+// ===== Note Modal (daily notes) =====
+function openNoteModal(date) {
+    noteDateTarget = date;
+    document.getElementById('note-date-display').textContent = formatDateShort(date) + ' ' + formatWeekday(date);
+    document.getElementById('note-title-input').value = state.dailyNotes[date] || '';
+    document.getElementById('note-content-input').value = state.dailyPredictions[date] || '';
+    const hasContent = (state.dailyNotes[date] || state.dailyPredictions[date]);
+    document.getElementById('note-remove-btn').style.display = hasContent ? '' : 'none';
+    document.getElementById('note-modal').classList.add('show');
+    setTimeout(() => document.getElementById('note-title-input').focus(), 100);
+}
+function saveNote() {
+    if (!noteDateTarget) return;
+    const title = document.getElementById('note-title-input').value.trim();
+    const body = document.getElementById('note-content-input').value.trim();
+    if (title) state.dailyNotes[noteDateTarget] = title; else delete state.dailyNotes[noteDateTarget];
+    if (body) state.dailyPredictions[noteDateTarget] = body; else delete state.dailyPredictions[noteDateTarget];
+    saveState();
+    closeNoteModal();
+    renderGrid();
+}
+function removeNote() {
+    if (!noteDateTarget) return;
+    delete state.dailyNotes[noteDateTarget];
+    delete state.dailyPredictions[noteDateTarget];
+    saveState();
+    closeNoteModal();
+    renderGrid();
+}
+function closeNoteModal() {
+    document.getElementById('note-modal').classList.remove('show');
+    noteDateTarget = null;
+}
+
+function saveMarkDate() {
+    if (!markDateTarget) return;
+    const label = document.getElementById('mark-label-input').value.trim();
+    if (label) {
+        state.markedDates[markDateTarget] = label;
+    } else {
+        delete state.markedDates[markDateTarget];
+    }
+    saveState();
+    const fromCal = _markFromCalendar;
+    _markFromCalendar = false;
+    closeMarkDialog();
+    if (fromCal) {
+        renderCalendarView();
+    } else {
+        renderGrid();
+    }
+}
+function removeMarkDate() {
+    if (!markDateTarget) return;
+    delete state.markedDates[markDateTarget];
+    saveState();
+    closeMarkDialog();
+    renderGrid();
+}
+
+// ===== Holiday management =====
+function openHolidayModal() {
+    renderHolidayList();
+    document.getElementById('holiday-modal').classList.add('show');
+}
+function closeHolidayModal() {
+    document.getElementById('holiday-modal').classList.remove('show');
+}
+function renderHolidayList() {
+    const container = document.getElementById('holiday-list');
+    const holidays = [...state.holidays].sort();
+    if (holidays.length === 0) {
+        container.innerHTML = '<div class="holiday-empty">暂无节假日，请添加</div>';
+        return;
+    }
+    container.innerHTML = holidays.map(d => `
+        <div class="holiday-item">
+            <span><span class="date">${d}</span><span class="weekday">${formatWeekday(d)}</span></span>
+            <button class="delete-btn" onclick="removeHoliday('${d}')">×</button>
+        </div>
+    `).join('');
+}
+function addHoliday() {
+    const input = document.getElementById('new-holiday');
+    const date = input.value;
+    if (!date) { showToast('请选择日期', true); return; }
+    if (state.holidays.includes(date)) { showToast('该日期已存在', true); return; }
+    state.holidays.push(date);
+    saveState();
+    input.value = '';
+    renderHolidayList();
+    // If current window is affected, re-render
+    windowEndDate = getRecentTradingDay();
+    renderGrid();
+    showToast('已添加');
+}
+function removeHoliday(date) {
+    state.holidays = state.holidays.filter(d => d !== date);
+    saveState();
+    renderHolidayList();
+    renderGrid();
+    showToast('已移除');
+}
+
+// ===== Export Read-Only HTML =====
+function exportReadOnly() {
+    let html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+
+    // 1. Inject readonly CSS before </head>
+    const readonlyCSS = `<style id="readonly-override">
+body.readonly-mode .header-actions,
+body.readonly-mode [onclick*="openLibraryModal"],
+body.readonly-mode [onclick*="openGuideModal"],
+body.readonly-mode .modal-overlay,
+body.readonly-mode #mark-dialog,
+body.readonly-mode .add-theme-row,
+body.readonly-mode .library-footer,
+body.readonly-mode .delete-btn,
+body.readonly-mode .stock-add-row,
+body.readonly-mode .x,
+body.readonly-mode .char-remove-btn,
+body.readonly-mode .phase-indicator {
+    display: none !important;
+}
+body.readonly-mode .cell { cursor: default !important; }
+body.readonly-mode .theme-item-name { cursor: default !important; }
+body.readonly-mode [onclick*="openMarkDialog"],
+body.readonly-mode [onclick*="openNoteModal"],
+body.readonly-mode [onclick*="openCharStyleModal"],
+body.readonly-mode [onclick*="openMarketStatsModal"],
+body.readonly-mode [onclick*="openOppModal"],
+body.readonly-mode [onclick*="toggleMarketCell"],
+body.readonly-mode [onclick*="cyclePhaseInGrid"],
+body.readonly-mode [onclick*="toggleCharStatus"],
+body.readonly-mode [onclick*="editThemeName"],
+body.readonly-mode [onclick*="deleteTheme"],
+body.readonly-mode [onclick*="deleteStock"],
+body.readonly-mode [onclick*="addStock"],
+body.readonly-mode [onclick*="selectOppResult"],
+body.readonly-mode [onclick*="addGuideArticle"],
+body.readonly-mode [onclick*="deleteGuideArticle"],
+body.readonly-mode [onclick*="toggleGuideArticle"] {
+    pointer-events: none !important;
+}
+</style>`;
+    html = html.replace('</head>', readonlyCSS + '\n</head>');
+
+    // 2. Embed current state data
+    const stateJSON = JSON.stringify(state).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/</g, '\\u003c').replace(/>/g, '\\u003e');
+    const guideJSON = (localStorage.getItem('tradingGuideArticles') || '[]').replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/</g, '\\u003c').replace(/>/g, '\\u003e');
+
+    const readonlyInit = `
+// ===== Read-Only Mode: Embedded Data =====
+(function() {
+    var _embeddedState = JSON.parse('${stateJSON}');
+    var _embeddedGuide = JSON.parse('${guideJSON}');
+    Object.assign(state, _embeddedState);
+    guideArticles = _embeddedGuide;
+    windowEndDate = getRecentTradingDay();
+    renderGrid();
+    document.body.classList.add('readonly-mode');
+    document.title = document.title + ' (只读版)';
+})();
+`;
+    // Replace init() call (use function to avoid $& replacement issues)
+    html = html.replace('// ===== Start =====\ninit();', () => '// ===== Start (Read-Only) =====\n' + readonlyInit);
+
+    // 3. Download
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = '交易助手_只读版_' + formatDate(new Date()) + '.html';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('已导出只读版，可分享给他人查看');
+}
+
+// ===== Import/Export =====
+function exportData() {
+    if (state.themes.length === 0) { showToast('无数据可导出', true); return; }
+    const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `题材强度_${formatDate(new Date())}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('已导出');
+}
+
+async function deployReadOnlyLink() {
+    const token = getGhToken();
+    if (!token) {
+        showToast('请先绑定 GitHub 账号', true);
+        return;
+    }
+    if (state.themes.length === 0) {
+        showToast('无数据可导出', true);
+        return;
+    }
+    showToast('正在生成只读链接...');
+    
+    try {
+        // 获取原始HTML源码
+        const srcResp = await fetch(`https://raw.githubusercontent.com/${GH_REPO}/main/index.html?t=${Date.now()}`);
+        let readonlyHTML = await srcResp.text();
+        
+        // 构建嵌入数据
+        const stateJSON = JSON.stringify(state)
+            .replace(/\\/g, '\\\\').replace(/'/g, "\\'")
+            .replace(/</g, '\\u003c').replace(/>/g, '\\u003e');
+        
+        // 注入只读CSS
+        const readonlyCSS = `<style>
+        .readonly-mode .btn, .readonly-mode button[onclick*="open"],
+        .readonly-mode button[onclick*="add"], .readonly-mode button[onclick*="delete"],
+        .readonly-mode button[onclick*="edit"], .readonly-mode button[onclick*="remove"],
+        .readonly-mode button[onclick*="bind"], .readonly-mode button[onclick*="deploy"],
+        .readonly-mode button[onclick*="export"], .readonly-mode button[onclick*="import"],
+        .readonly-mode button[onclick*="sync"], .readonly-mode button[onclick*="toggle"],
+        .readonly-mode button[onclick*="save"], .readonly-mode button[onclick*="close"],
+        .readonly-mode .add-btn, .readonly-mode .del-btn, .readonly-mode .edit-btn,
+        .readonly-mode .lib-add-row, .readonly-mode .library-actions,
+        .readonly-mode #holiday-btn, .readonly-mode .char-style-row button:last-child,
+        .readonly-mode .note-input, .readonly-mode textarea,
+        .readonly-mode #opp-modal textarea, .readonly-mode #opp-modal input,
+        .readonly-mode input[type="text"]:not([id="date-jump"]) { display:none !important; }
+        .readonly-mode { cursor: default !important; }
+        .readonly-mode .cell { cursor: default !important; }
+        </style>`;
+        
+        readonlyHTML = readonlyHTML.replace('</head>', readonlyCSS + '</head>');
+        
+        // 注入只读初始化脚本（在 </body> 之前）
+        const readonlyInitScript = `<script>
+        (function() {
+            document.documentElement.classList.add('readonly-mode');
+            // 覆盖保存和编辑函数
+            window.saveState = function() {};
+            window.ghSaveData = function() { return Promise.resolve(false); };
+            window.bindGitHub = function() {};
+            window.deployReadOnlyLink = function() {};
+            window.syncFromCloud = function() {};
+            // 覆盖数据初始化
+            var _rd = JSON.parse('${stateJSON}');
+            window._readonlyData = _rd;
+            // 覆盖 init 中的 loadState
+            var _origLoadState = window.loadState;
+            window.loadState = function() {
+                state = {
+                    themes: _rd.themes || [],
+                    data: _rd.data || {},
+                    stocks: _rd.stocks || {},
+                    holidays: _rd.holidays || [],
+                    marketAtm: _rd.marketAtm || {},
+                    stockData: _rd.stockData || {},
+                    markedDates: _rd.markedDates || {},
+                    dailyNotes: _rd.dailyNotes || {},
+                    dailyPredictions: _rd.dailyPredictions || {},
+                    marketPhases: _rd.marketPhases || {},
+                    phaseNotes: _rd.phaseNotes || {},
+                    charStyle: _rd.charStyle || {},
+                    marketStats: _rd.marketStats || {},
+                    oppPredict: _rd.oppPredict || {}
+                };
+            };
+            document.title = document.title + ' (只读版)';
+        })();
+        <\/script>`;
+        
+        readonlyHTML = readonlyHTML.replace('</body>', readonlyInitScript + '</body>');
+        
+        // 上传到 GitHub
+        let fileSha = '';
+        try {
+            const metaResp = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/readonly.html`, {
+                headers: { 'Authorization': `token ${token}` }
+            });
+            if (metaResp.ok) {
+                const meta = await metaResp.json();
+                fileSha = meta.sha;
+            }
+        } catch(e) {}
+        
+        const content = btoa(unescape(encodeURIComponent(readonlyHTML)));
+        const body = {
+            message: `Update readonly ${new Date().toLocaleString('zh-CN')}`,
+            content: content
+        };
+        if (fileSha) body.sha = fileSha;
+        
+        const saveResp = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/readonly.html`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `token ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(body)
+        });
+        
+        if (saveResp.ok) {
+            const link = `https://${GH_REPO.split('/')[0]}.github.io/${GH_REPO.split('/')[1]}/readonly.html`;
+            try { await navigator.clipboard.writeText(link); } catch(e) {}
+            showToast('只读链接已生成并复制到剪贴板！');
+            setTimeout(() => alert('只读版链接已复制：\n\n' + link + '\n\n发给别人即可，对方只能看不能改。'), 500);
+        } else {
+            const err = await saveResp.json();
+            showToast('部署失败：' + err.message, true);
+        }
+    } catch(e) {
+        showToast('生成失败：' + e.message, true);
+        console.error(e);
+    }
+}
+
+// ===== GitHub Cloud Sync =====
+function getGhToken() {
+    return localStorage.getItem(GH_TOKEN_KEY) || '';
+}
+function setGhToken(token) {
+    if (token) localStorage.setItem(GH_TOKEN_KEY, token);
+    else localStorage.removeItem(GH_TOKEN_KEY);
+}
+async function ghLoadData() {
+    try {
+        const resp = await fetch(`https://raw.githubusercontent.com/${GH_REPO}/main/${GH_DATA_FILE}?t=${Date.now()}`);
+        if (!resp.ok) return null;
+        const data = await resp.json();
+        if (data && data.themes) return data;
+        return null;
+    } catch(e) {
+        console.warn('Cloud load failed:', e);
+        return null;
+    }
+}
+async function ghSaveData() {
+    const token = getGhToken();
+    if (!token) return false;
+    try {
+        // 获取文件当前 SHA
+        const metaResp = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/${GH_DATA_FILE}`, {
+            headers: { 'Authorization': `token ${token}` }
+        });
+        if (!metaResp.ok) {
+            if (metaResp.status === 401) {
+                showToast('GitHub token 已失效，请重新绑定', true);
+                setGhToken('');
+            }
+            return false;
+        }
+        const meta = await metaResp.json();
+        const fileSha = meta.sha;
+        
+        // 更新文件
+        const content = btoa(unescape(encodeURIComponent(JSON.stringify(state, null, 2))));
+        const saveResp = await fetch(`https://api.github.com/repos/${GH_REPO}/contents/${GH_DATA_FILE}`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `token ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                message: `Sync data ${new Date().toLocaleString('zh-CN')}`,
+                content: content,
+                sha: fileSha
+            })
+        });
+        if (saveResp.ok) {
+            console.log('Cloud save success');
+            return true;
+        } else {
+            const err = await saveResp.json();
+            console.warn('Cloud save failed:', err.message);
+            return false;
+        }
+    } catch(e) {
+        console.warn('Cloud save error:', e);
+        return false;
+    }
+}
+function bindGitHub() {
+    const currentToken = getGhToken();
+    const token = prompt(
+        currentToken 
+            ? '已绑定 GitHub ✅\n输入新 token 可更换，输入 DELETE 可解绑：'
+            : '请输入 GitHub Personal Access Token（需要 repo 权限）：\n前往 https://github.com/settings/tokens/new 创建',
+        currentToken
+    );
+    if (token === null) return;
+    if (token === 'DELETE') {
+        setGhToken('');
+        showToast('已解除 GitHub 绑定');
+        return;
+    }
+    if (token.trim().length < 10) {
+        showToast('Token 格式不正确', true);
+        return;
+    }
+    setGhToken(token.trim());
+    // 测试 token
+    fetch('https://api.github.com/user', { headers: { 'Authorization': `token ${token.trim()}` }})
+        .then(r => r.json())
+        .then(d => {
+            if (d.login) {
+                showToast(`已绑定 GitHub: ${d.login}`);
+                // 立即同步一次
+                ghSaveData().then(ok => {
+                    if (ok) showToast('数据已同步到云端');
+                });
+            } else {
+                showToast('Token 无效，请检查', true);
+                setGhToken('');
+            }
+        })
+        .catch(() => { showToast('网络错误', true); setGhToken(''); });
+}
+async function syncFromCloud() {
+    const data = await ghLoadData();
+    if (data) {
+        state = {
+            themes: data.themes || [],
+            data: data.data || {},
+            stocks: data.stocks || {},
+            holidays: data.holidays || [],
+            marketAtm: data.marketAtm || {},
+            stockData: data.stockData || {},
+            markedDates: data.markedDates || {},
+            dailyNotes: data.dailyNotes || {},
+            dailyPredictions: data.dailyPredictions || {},
+            marketPhases: data.marketPhases || {},
+            phaseNotes: data.phaseNotes || {},
+            charStyle: data.charStyle || {},
+            marketStats: data.marketStats || {},
+            oppPredict: data.oppPredict || {}
+        };
+        saveState();
+        windowEndDate = getRecentTradingDay();
+        renderLibrary();
+        renderGrid();
+        showToast('已从云端同步最新数据');
+    } else {
+        showToast('云端暂无数据', true);
+    }
+}
+
+// ===== Toast =====
+function showToast(msg, isError) {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.className = 'toast show' + (isError ? ' error' : '');
+    setTimeout(() => { toast.className = 'toast'; }, 2000);
+}
+
+// ===== Confirm dialog =====
+function showConfirm(message, onConfirm) {
+    const dialog = document.getElementById('confirm-dialog');
+    dialog.innerHTML = `
+        <div class="confirm-overlay" onclick="if(event.target===this)closeConfirm()">
+            <div class="confirm-box">
+                <p>${message}</p>
+                <button class="btn btn-danger" onclick="confirmYes()">确定</button>
+                <button class="btn" onclick="closeConfirm()">取消</button>
+            </div>
+        </div>
+    `;
+    window._confirmCallback = onConfirm;
+}
+function confirmYes() {
+    closeConfirm();
+    if (window._confirmCallback) window._confirmCallback();
+}
+function closeConfirm() {
+    document.getElementById('confirm-dialog').innerHTML = '';
+    window._confirmCallback = null;
+}
+
+// ===== Month View =====
+
+// ===== Calendar View =====
+function renderCalendarView() {
+    const content = document.getElementById('month-view-content');
+    const year = calendarYear;
+    const month = calendarMonth;
+    const monthNames = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+
+    // Get first day of month and total days
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const totalDays = lastDay.getDate();
+    let startWeekday = firstDay.getDay(); // 0=Sun
+    if (startWeekday === 0) startWeekday = 7; // Make Mon=1 ... Sun=7
+
+    let html = '';
+    html += '<div class="calendar-container">';
+
+    // Navigation
+    html += '<div class="calendar-nav">';
+    html += '<button class="btn btn-sm" onclick="calendarPrevMonth()">◄ 上月</button>';
+    html += '<span class="month-label">' + year + '年 ' + monthNames[month] + '</span>';
+    html += '<button class="btn btn-sm" onclick="calendarNextMonth()">下月 ►</button>';
+    html += '<button class="btn btn-sm" onclick="calendarGoToday()">今天</button>';
+    html += '</div>';
+
+    // Weekday headers (Mon-Sun)
+    html += '<div class="calendar-weekdays">';
+    const weekdayNames = ['一','二','三','四','五','六','日'];
+    weekdayNames.forEach(w => html += '<div>周' + w + '</div>');
+    html += '</div>';
+
+    // Calendar grid
+    html += '<div class="calendar-grid">';
+
+    // Empty cells before first day (Mon=1)
+    for (let i = 1; i < startWeekday; i++) {
+        html += '<div class="calendar-day empty"></div>';
+    }
+
+    const todayStr = formatDate(new Date());
+
+    // Day cells
+    for (let d = 1; d <= totalDays; d++) {
+        const dateStr = year + '-' + String(month + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+        const dow = new Date(dateStr + 'T00:00:00').getDay();
+        const isWeekendDay = (dow === 0 || dow === 6);
+        const isHolidayDay = isHoliday(dateStr);
+        const isTodayDay = (dateStr === todayStr);
+        const phase = state.marketPhases[dateStr];
+        const note = state.markedDates[dateStr];
+
+        let cls = 'calendar-day';
+        if (isWeekendDay) cls += ' weekend';
+        if (isHolidayDay) cls += ' holiday';
+        if (isTodayDay) cls += ' today';
+        if (phase === '孕育期') cls += ' phase-yunyu';
+        else if (phase === '主升期') cls += ' phase-zhusheng';
+        else if (phase === '震荡期') cls += ' phase-zhendang';
+        else if (phase === '退潮期') cls += ' phase-tuichao';
+
+        html += '<div class="' + cls + '" onclick="cyclePhase(\'' + dateStr + '\')" ondblclick="event.stopPropagation();openPhaseNoteModal(\'' + dateStr + '\')">';
+        html += '<span class="day-number">' + d + '</span>';
+
+        if (phase) {
+            html += '<span class="phase-tag">' + phase + '</span>';
+        }
+        if (note) {
+            html += '<span class="day-note" style="color:#e3b341;font-weight:600">📌' + note.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</span>';
+        }
+        if (isHolidayDay && !phase) {
+            html += '<span class="phase-tag" style="background:rgba(218,54,51,0.15);color:#f85149">休市</span>';
+        }
+        html += '</div>';
+    }
+
+    // Empty cells after last day to fill the row
+    const lastDow = new Date(year + '-' + String(month + 1).padStart(2, '0') + '-' + String(totalDays).padStart(2, '0') + 'T00:00:00').getDay();
+    const remaining = (lastDow === 0) ? 0 : (7 - lastDow);
+    for (let i = 0; i < remaining; i++) {
+        html += '<div class="calendar-day empty"></div>';
+    }
+
+    html += '</div>';
+
+    // Legend
+    html += '<div class="calendar-legend">';
+    html += '<div class="legend-item"><div class="legend-dot yunyu"></div>孕育期</div>';
+    html += '<div class="legend-item"><div class="legend-dot zhusheng"></div>主升期</div>';
+    html += '<div class="legend-item"><div class="legend-dot zhendang"></div>震荡期</div>';
+    html += '<div class="legend-item"><div class="legend-dot tuichao"></div>退潮期</div>';
+    html += '<div style="margin-left:auto;font-size:11px;color:#6e7681">💡 单击切换周期 | 双击添加标注</div>';
+    html += '</div>';
+
+    // Phase summary
+    html += renderPhaseSummary();
+
+    html += '</div>';
+
+    content.innerHTML = html;
+}
+
+function renderPhaseSummary() {
+    // Find current continuous phases
+    const phases = state.marketPhases;
+    const dates = Object.keys(phases).sort();
+    if (dates.length === 0) return '';
+
+    // Group consecutive dates with same phase
+    const groups = [];
+    let current = { phase: phases[dates[0]], start: dates[0], end: dates[0] };
+    for (let i = 1; i < dates.length; i++) {
+        const prev = dates[i-1];
+        const curr = dates[i];
+        const prevDate = new Date(prev + 'T00:00:00');
+        const currDate = new Date(curr + 'T00:00:00');
+        const diffDays = Math.round((currDate - prevDate) / (1000 * 60 * 60 * 24));
+        if (phases[curr] === current.phase && diffDays <= 3) {
+            current.end = curr;
+        } else {
+            groups.push({...current});
+            current = { phase: phases[curr], start: curr, end: curr };
+        }
+    }
+    groups.push({...current});
+
+    const phaseColors = {
+        '孕育期': 'tag-gray',
+        '主升期': 'tag-red',
+        '震荡期': 'tag-yellow',
+        '退潮期': 'tag-green'
+    };
+
+    let html = '<div class="ref-section" style="margin-top:16px"><h3>📊 周期时间线</h3>';
+    groups.forEach(g => {
+        const days = Math.round((new Date(g.end + 'T00:00:00') - new Date(g.start + 'T00:00:00')) / (1000*60*60*24)) + 1;
+        const tagCls = phaseColors[g.phase] || 'tag-gray';
+        const startShort = formatDateShort(g.start);
+        const endShort = formatDateShort(g.end);
+        const range = g.start === g.end ? startShort : startShort + ' ~ ' + endShort;
+        html += '<div class="ref-item"><span class="ref-content"><span class="tag ' + tagCls + '">' + g.phase + '</span> ' + range + '（' + days + '天）</div></div>';
+    });
+    html += '</div>';
+    return html;
+}
+
+function calendarPrevMonth() {
+    calendarMonth--;
+    if (calendarMonth < 0) { calendarMonth = 11; calendarYear--; }
+    renderCalendarView();
+}
+
+function calendarNextMonth() {
+    calendarMonth++;
+    if (calendarMonth > 11) { calendarMonth = 0; calendarYear++; }
+    renderCalendarView();
+}
+
+function calendarGoToday() {
+    const today = new Date();
+    calendarYear = today.getFullYear();
+    calendarMonth = today.getMonth();
+    renderCalendarView();
+}
+
+function cyclePhase(date) {
+    const phases = ['孕育期', '主升期', '震荡期', '退潮期'];
+    const current = state.marketPhases[date];
+    if (!current) {
+        state.marketPhases[date] = '孕育期';
+    } else {
+        const idx = phases.indexOf(current);
+        if (idx === phases.length - 1) {
+            delete state.marketPhases[date];
+        } else {
+            state.marketPhases[date] = phases[idx + 1];
+        }
+    }
+    saveState();
+    renderCalendarView();
+}
+
+function cyclePhaseInGrid(date) {
+    const phases = ['孕育期', '主升期', '震荡期', '退潮期'];
+    const current = state.marketPhases[date];
+    if (!current) {
+        state.marketPhases[date] = '孕育期';
+    } else {
+        const idx = phases.indexOf(current);
+        if (idx === phases.length - 1) {
+            delete state.marketPhases[date];
+        } else {
+            state.marketPhases[date] = phases[idx + 1];
+        }
+    }
+    saveState();
+    renderGrid();
+}
+
+function openMonthView() {
+    const today = new Date();
+    calendarYear = today.getFullYear();
+    calendarMonth = today.getMonth();
+    renderCalendarView();
+    document.getElementById('month-view-overlay').classList.add('show');
+}
+
+function closeMonthView() {
+    document.getElementById('month-view-overlay').classList.remove('show');
+    renderGrid();
+}
+
+function openPhaseNoteModal(date) {
+    markDateTarget = date;
+    _markFromCalendar = true;
+    const modal = document.getElementById('mark-modal');
+    modal.dataset.mode = '';
+    modal.querySelector('h3').textContent = '📌 标注关键日';
+    document.getElementById('mark-date-display').textContent = date + ' ' + formatWeekday(date);
+    const input = document.getElementById('mark-label-input');
+    input.value = state.markedDates[date] || '';
+    input.placeholder = '输入标注名称（如：大爆发、恐慌日）';
+    document.getElementById('mark-remove-btn').style.display = state.markedDates[date] ? '' : 'none';
+    document.getElementById('mark-remove-btn').onclick = function() { removePhaseNote(); };
+    modal.classList.add('show');
+    setTimeout(() => input.focus(), 100);
+}
+
+function removePhaseNote() {
+    if (!markDateTarget) return;
+    delete state.markedDates[markDateTarget];
+    saveState();
+    _markFromCalendar = false;
+    closeMarkDialog();
+    renderCalendarView();
+}
+
+// ===== Start =====
+init();
+</script>
+<script src="badge.js"></script>
+</body>
+</html>
+
