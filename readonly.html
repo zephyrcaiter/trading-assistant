@@ -1038,7 +1038,6 @@ header h1 { font-size: 22px; color: #58a6ff; }
             
             
             <button class="btn" onclick="exportData()">导出数据</button>
-            <button class="btn" onclick="syncFromCloud()" title="从云端拉取最新数据">☁️ 同步</button>
             <button class="btn" onclick="bindGitHub()" title="绑定GitHub账号实现多设备同步">🔗 绑定</button>
             <button class="btn" onclick="document.getElementById('import-file').click()">导入数据</button>
             <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
@@ -2801,35 +2800,6 @@ function bindGitHub() {
         })
         .catch(() => { showToast('网络错误', true); setGhToken(''); });
 }
-async function syncFromCloud() {
-    const data = await ghLoadData();
-    if (data) {
-        state = {
-            themes: data.themes || [],
-            data: data.data || {},
-            stocks: data.stocks || {},
-            holidays: data.holidays || [],
-            marketAtm: data.marketAtm || {},
-            stockData: data.stockData || {},
-            markedDates: data.markedDates || {},
-            dailyNotes: data.dailyNotes || {},
-            dailyPredictions: data.dailyPredictions || {},
-            marketPhases: data.marketPhases || {},
-            phaseNotes: data.phaseNotes || {},
-            charStyle: data.charStyle || {},
-            marketStats: data.marketStats || {},
-            oppPredict: data.oppPredict || {}
-        };
-        saveState();
-        windowEndDate = getRecentTradingDay();
-        renderLibrary();
-        renderGrid();
-        showToast('已从云端同步最新数据');
-    } else {
-        showToast('云端暂无数据', true);
-    }
-}
-
 // ===== Toast =====
 function showToast(msg, isError) {
     const toast = document.getElementById('toast');
@@ -3123,7 +3093,6 @@ init();
     window.saveMarkDate = function() {};
     window.ghSaveData = function() { return Promise.resolve(false); };
     window.bindGitHub = function() {};
-    window.syncFromCloud = function() {};
 
     // v6.1.2 FIX: Load embedded data BEFORE any code that might throw (e.g. classList override)
     // This ensures data renders even on devices without localStorage
