@@ -2966,8 +2966,18 @@ function bindGitHub() {
         .catch(() => { showToast('网络错误', true); setGhToken(''); });
 }
 async function syncFromCloud() {
-    const data = await ghLoadData();
-    if (data) {
+    let data = await ghLoadData();
+    // v6.1.5: raw 域名失败时降级到同域 data.json（GitHub Pages 镜像，内容同源）
+    if (!data || !data.themes) {
+        try {
+            const r = await fetch('./data.json?t=' + Date.now(), {cache: 'no-cache'});
+            if (r.ok) {
+                const local = await r.json();
+                if (local && local.themes) data = local;
+            }
+        } catch(e) {}
+    }
+    if (data && data.themes) {
         state = {
             themes: data.themes || [],
             data: data.data || {},
@@ -2984,13 +2994,14 @@ async function syncFromCloud() {
             marketStats: data.marketStats || {},
             oppPredict: data.oppPredict || {}
         };
-        saveState();
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
         windowEndDate = getRecentTradingDay();
+        focusLatestDataWindow();
         renderLibrary();
         renderGrid();
         showToast('已从云端同步最新数据');
     } else {
-        showToast('云端暂无数据', true);
+        showToast('云端拉取失败，请检查网络后重试', true);
     }
 }
 
