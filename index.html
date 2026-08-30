@@ -1038,7 +1038,6 @@ header h1 { font-size: 22px; color: #58a6ff; }
             <button class="btn" onclick="exportReadOnly()">导出只读版</button>
             <button class="btn" onclick="deployReadOnlyLink()" title="生成只读版在线链接">📤 只读链接</button>
             <button class="btn" onclick="exportData()">导出数据</button>
-            <button class="btn" onclick="syncFromCloud()" title="从云端拉取最新数据">☁️ 同步</button>
             <button class="btn" onclick="bindGitHub()" title="绑定GitHub账号实现多设备同步">🔗 绑定</button>
             <button class="btn" onclick="document.getElementById('import-file').click()">导入数据</button>
             <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
@@ -2791,7 +2790,6 @@ async function deployReadOnlyLink() {
             window.ghSaveData = function() { return Promise.resolve(false); };
             window.bindGitHub = function() {};
             window.deployReadOnlyLink = function() {};
-            window.syncFromCloud = function() {};
             // 覆盖数据初始化
             var _rd = JSON.parse('${stateJSON}');
             window._readonlyData = _rd;
@@ -2965,46 +2963,6 @@ function bindGitHub() {
         })
         .catch(() => { showToast('网络错误', true); setGhToken(''); });
 }
-async function syncFromCloud() {
-    let data = await ghLoadData();
-    // v6.1.5: raw 域名失败时降级到同域 data.json（GitHub Pages 镜像，内容同源）
-    if (!data || !data.themes) {
-        try {
-            const r = await fetch('./data.json?t=' + Date.now(), {cache: 'no-cache'});
-            if (r.ok) {
-                const local = await r.json();
-                if (local && local.themes) data = local;
-            }
-        } catch(e) {}
-    }
-    if (data && data.themes) {
-        state = {
-            themes: data.themes || [],
-            data: data.data || {},
-            stocks: data.stocks || {},
-            holidays: data.holidays || [],
-            marketAtm: data.marketAtm || {},
-            stockData: data.stockData || {},
-            markedDates: data.markedDates || {},
-            dailyNotes: data.dailyNotes || {},
-            dailyPredictions: data.dailyPredictions || {},
-            marketPhases: data.marketPhases || {},
-            phaseNotes: data.phaseNotes || {},
-            charStyle: data.charStyle || {},
-            marketStats: data.marketStats || {},
-            oppPredict: data.oppPredict || {}
-        };
-        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
-        windowEndDate = getRecentTradingDay();
-        focusLatestDataWindow();
-        renderLibrary();
-        renderGrid();
-        showToast('已从云端同步最新数据');
-    } else {
-        showToast('云端拉取失败，请检查网络后重试', true);
-    }
-}
-
 // ===== Toast =====
 function showToast(msg, isError) {
     const toast = document.getElementById('toast');
