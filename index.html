@@ -1486,6 +1486,7 @@ function init() {
         // 只写本地缓存，不调用 saveState()（避免触发 data.json 回写）
         try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
         windowEndDate = getRecentTradingDay();
+        focusLatestDataWindow();
         renderLibrary();
         renderGrid();
         console.log(source + ' data loaded');
@@ -1515,6 +1516,8 @@ function init() {
         loadLocalDataJson().catch(()=>{});
     }
     windowEndDate = getRecentTradingDay();
+    // v6.1.4: 本地缓存可能为空或数据停更多日，默认窗口整周无数据时定位到最新有数据交易日
+    focusLatestDataWindow();
     renderLibrary();
     renderGrid();
 }
@@ -1770,6 +1773,37 @@ function shiftTradingDays(dateStr, n) {
 }
 function getWindowDates() {
     return getTradingDays(windowEndDate, 5);
+}
+
+// v6.1.4: 默认窗口为最近5个交易日；若该窗口整周无数据（数据未更新/长假后打开），
+// 自动定位到最新有数据的交易日，避免打开页面时网格全空
+function focusLatestDataWindow() {
+    try {
+        var win = getWindowDates();
+        var hasData = win.some(function(dt) {
+            return (state.data && Object.keys(state.data).some(function(t) { return state.data[t] && state.data[t][dt]; })) ||
+                   (state.marketAtm && state.marketAtm[dt]) ||
+                   (state.marketPhases && state.marketPhases[dt]) ||
+                   (state.marketStats && state.marketStats[dt]) ||
+                   (state.charStyle && state.charStyle[dt]);
+        });
+        if (!hasData) {
+            var dates = {};
+            ['data','marketAtm','marketPhases','marketStats','charStyle','dailyNotes','dailyPredictions','markedDates','phaseNotes'].forEach(function(k) {
+                var o = state[k];
+                if (!o) return;
+                if (k === 'data') {
+                    Object.keys(o).forEach(function(t) {
+                        if (o[t]) Object.keys(o[t]).forEach(function(d) { if (/^\d{4}-\d{2}-\d{2}$/.test(d)) dates[d] = 1; });
+                    });
+                } else {
+                    Object.keys(o).forEach(function(d) { if (/^\d{4}-\d{2}-\d{2}$/.test(d)) dates[d] = 1; });
+                }
+            });
+            var latest = Object.keys(dates).sort().pop();
+            if (latest) windowEndDate = latest;
+        }
+    } catch(e) { console.warn('focusLatestDataWindow failed:', e); }
 }
 function formatDateShort(dateStr) {
     const parts = dateStr.split('-');
