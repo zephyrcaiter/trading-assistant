@@ -1464,62 +1464,55 @@ let calendarMonth = new Date().getMonth();
 // ===== Init =====
 function init() {
     loadState();
+    // v6.1.3 FIX: 云端拉取失败/无数据时，必须降级到同域data.json，
+    // 避免 raw.githubusercontent.com 国内不可达 + localStorage 为空时页面无数据
+    var applyLoadedData = function(d, source) {
+        state = {
+            themes: d.themes || [],
+            data: d.data || {},
+            stocks: d.stocks || {},
+            holidays: d.holidays || [],
+            marketAtm: d.marketAtm || {},
+            stockData: d.stockData || {},
+            markedDates: d.markedDates || {},
+            dailyNotes: d.dailyNotes || {},
+            dailyPredictions: d.dailyPredictions || {},
+            marketPhases: d.marketPhases || {},
+            phaseNotes: d.phaseNotes || {},
+            charStyle: d.charStyle || {},
+            marketStats: d.marketStats || {},
+            oppPredict: d.oppPredict || {}
+        };
+        // 只写本地缓存，不调用 saveState()（避免触发 data.json 回写）
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
+        windowEndDate = getRecentTradingDay();
+        renderLibrary();
+        renderGrid();
+        console.log(source + ' data loaded');
+    };
+    var loadLocalDataJson = function() {
+        return fetch('./data.json?t=' + Date.now(), {cache: 'no-cache'})
+            .then(resp => resp.ok ? resp.json() : null)
+            .then(data => {
+                if (data && data.themes && data.themes.length > 0) {
+                    applyLoadedData(data, 'Local data.json');
+                    return true;
+                }
+                return false;
+            });
+    };
     // 自动从云端加载（如果有绑定token）
     if (getGhToken()) {
         ghLoadData().then(cloudData => {
             if (cloudData && cloudData.themes && cloudData.themes.length > 0) {
-                state = {
-                    themes: cloudData.themes || [],
-                    data: cloudData.data || {},
-                    stocks: cloudData.stocks || {},
-                    holidays: cloudData.holidays || [],
-                    marketAtm: cloudData.marketAtm || {},
-                    stockData: cloudData.stockData || {},
-                    markedDates: cloudData.markedDates || {},
-                    dailyNotes: cloudData.dailyNotes || {},
-                    dailyPredictions: cloudData.dailyPredictions || {},
-                    marketPhases: cloudData.marketPhases || {},
-                    phaseNotes: cloudData.phaseNotes || {},
-                    charStyle: cloudData.charStyle || {},
-                    marketStats: cloudData.marketStats || {},
-                    oppPredict: cloudData.oppPredict || {}
-                };
-                saveState();
-                windowEndDate = getRecentTradingDay();
-                renderLibrary();
-                renderGrid();
-                console.log('Cloud data loaded');
+                applyLoadedData(cloudData, 'Cloud');
+            } else {
+                loadLocalDataJson().catch(()=>{});
             }
-        }).catch(()=>{});
+        }).catch(() => { loadLocalDataJson().catch(()=>{}); });
     } else {
         // 没有token时，尝试从同域data.json加载
-        fetch('./data.json?t=' + Date.now(), {cache: 'no-cache'})
-            .then(resp => resp.ok ? resp.json() : null)
-            .then(data => {
-                if (data && data.themes && data.themes.length > 0) {
-                    state = {
-                        themes: data.themes || [],
-                        data: data.data || {},
-                        stocks: data.stocks || {},
-                        holidays: data.holidays || [],
-                        marketAtm: data.marketAtm || {},
-                        stockData: data.stockData || {},
-                        markedDates: data.markedDates || {},
-                        dailyNotes: data.dailyNotes || {},
-                        dailyPredictions: data.dailyPredictions || {},
-                        marketPhases: data.marketPhases || {},
-                        phaseNotes: data.phaseNotes || {},
-                        charStyle: data.charStyle || {},
-                        marketStats: data.marketStats || {},
-                        oppPredict: data.oppPredict || {}
-                    };
-                    windowEndDate = getRecentTradingDay();
-                    renderLibrary();
-                    renderGrid();
-                    console.log('Local data.json loaded');
-                }
-            })
-            .catch(()=>{});
+        loadLocalDataJson().catch(()=>{});
     }
     windowEndDate = getRecentTradingDay();
     renderLibrary();
