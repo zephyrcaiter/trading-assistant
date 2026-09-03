@@ -1299,7 +1299,7 @@ const STORAGE_KEY = 'themeStrengthV3';
     const GH_TOKEN_KEY = 'gh_sync_token';
 // Default themes to pre-populate on first load
 const DEFAULT_THEMES = ['PCB', 'CPO', '创新药', 'AI应用', '机器人', '固态电池', '低空经济', '半导体', '华为概念'];
-let state = { themes: [], data: {}, stocks: {}, holidays: [], marketAtm: {}, stockData: {}, markedDates: {}, dailyNotes: {}, dailyPredictions: {}, marketPhases: {}, phaseNotes: {}, charStyle: {}, marketStats: {}, oppPredict: { row1: {}, row1Result: {}, row2: {}, row2Result: {} } };
+let state = { themes: [], data: {}, stocks: {}, holidays: [], marketAtm: {}, stockData: {}, markedDates: {}, dailyNotes: {}, dailyPredictions: {}, marketPhases: {}, phaseNotes: {}, charStyle: {}, marketStats: {}, oppPredict: { predict: {}, result: {} } };
 let windowEndDate = null;
 let expandedTheme = null;
 let currentView = 'main';
@@ -1431,14 +1431,18 @@ function openOppModal(row, date, type) {
     oppRow = row;
     oppDate = date;
     oppType = type;
-    
+
     const dateLabel = formatDateShort(date) + ' ' + formatWeekday(date);
     const rowLabel = row === 'row1' ? '预测一' : '预测二';
-    
+    // v6.1.7: 预测统一存 predict map（key=填写日，预测下一交易日机会）；
+    // 验证统一存 result map（key=验证日，验证的是上一交易日的预测）。两行共用同一数据源，翻窗口不再丢数据。
+    const predictMap = state.oppPredict.predict || {};
+    const resultMap = state.oppPredict.result || {};
+
     if (type === 'predict') {
         document.getElementById('opp-modal-title').textContent = '📈 预测股票';
-        document.getElementById('opp-modal-hint').textContent = rowLabel + ' - ' + dateLabel + ' - 输入预测的股票名称（最多3只）';
-        const stocks = state.oppPredict[row][date] || [];
+        document.getElementById('opp-modal-hint').textContent = rowLabel + ' - ' + dateLabel + ' 预测下一交易日的机会（最多3只）';
+        const stocks = predictMap[date] || [];
         oppDraftStocks = [stocks[0] || '', stocks[1] || '', stocks[2] || ''];
         let html = '<div style="display:flex;flex-direction:column;gap:8px">';
         for (let i = 0; i < 3; i++) {
@@ -1448,15 +1452,18 @@ function openOppModal(row, date, type) {
         document.getElementById('opp-modal-body').innerHTML = html;
     } else {
         document.getElementById('opp-modal-title').textContent = '📊 验证结果';
-        document.getElementById('opp-modal-hint').textContent = rowLabel + ' - ' + dateLabel + ' - 逐一标注每只股票的盈亏';
-        const resultKey = row === 'row1' ? 'row1Result' : 'row2Result';
-        const results = state.oppPredict[resultKey][date] || [];
+        const prevD = shiftTradingDays(date, -1);
+        const prevLabel = prevD ? (formatDateShort(prevD) + ' ' + formatWeekday(prevD)) : '';
+        document.getElementById('opp-modal-hint').textContent = rowLabel + ' - 验证 ' + dateLabel + '（对照 ' + prevLabel + ' 的预测）';
+        const predictedStocks = prevD ? (predictMap[prevD] || []) : [];
+        const results = resultMap[date] || [];
         oppDraftResults = [results[0] || '', results[1] || '', results[2] || ''];
         let html = '<div style="display:flex;flex-direction:column;gap:10px">';
         for (let i = 0; i < 3; i++) {
             const val = oppDraftResults[i];
+            const name = predictedStocks[i] || ('股票' + (i+1));
             html += '<div style="display:flex;align-items:center;gap:10px">';
-            html += '<span style="width:60px;font-size:12px;color:#c9d1d9">股票' + (i+1) + '</span>';
+            html += '<span style="width:72px;font-size:12px;color:#c9d1d9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + String(name).replace(/"/g, '&quot;') + '">' + name + '</span>';
             html += '<button class="btn" id="opp-res-' + i + '-win" onclick="selectOppResult(' + i + ',\'盈\')" style="flex:1;padding:10px;font-size:14px;font-weight:700;border-radius:6px;';
             html += val === '盈' ? 'background:rgba(218,54,51,0.2);color:#da3633;border:2px solid #da3633' : 'background:#0d1117;color:#8b949e;border:1px solid #30363d';
             html += '">盈</button>';
@@ -1468,11 +1475,10 @@ function openOppModal(row, date, type) {
         html += '</div>';
         document.getElementById('opp-modal-body').innerHTML = html;
     }
-    
-    const resultKey = row === 'row1' ? 'row1Result' : 'row2Result';
-    const hasData = type === 'predict' ? 
-        ((state.oppPredict[row][date] || []).length > 0) :
-        ((state.oppPredict[resultKey][date] || []).length > 0);
+
+    const hasData = type === 'predict' ?
+        ((predictMap[date] || []).length > 0) :
+        ((resultMap[date] || []).filter(function(r){return r;}).length > 0);
     document.getElementById('opp-remove-btn').style.display = hasData ? '' : 'none';
     document.getElementById('opp-modal').classList.add('show');
     if (type === 'predict') setTimeout(() => document.getElementById('opp-stock-0').focus(), 100);
@@ -1486,6 +1492,8 @@ function selectOppResult(idx, val) {
 
 function saveOppData() {
     if (!oppDate) return;
+    if (!state.oppPredict.predict) state.oppPredict.predict = {};
+    if (!state.oppPredict.result) state.oppPredict.result = {};
     if (oppType === 'predict') {
         const stocks = [];
         for (let i = 0; i < 3; i++) {
@@ -1493,17 +1501,16 @@ function saveOppData() {
             if (v) stocks.push(v);
         }
         if (stocks.length > 0) {
-            state.oppPredict[oppRow][oppDate] = stocks;
+            state.oppPredict.predict[oppDate] = stocks;
         } else {
-            delete state.oppPredict[oppRow][oppDate];
+            delete state.oppPredict.predict[oppDate];
         }
     } else {
-        const resultKey = oppRow === 'row1' ? 'row1Result' : 'row2Result';
         const results = oppDraftResults.filter(r => r);
         if (results.length > 0) {
-            state.oppPredict[resultKey][oppDate] = oppDraftResults;
+            state.oppPredict.result[oppDate] = oppDraftResults;
         } else {
-            delete state.oppPredict[resultKey][oppDate];
+            delete state.oppPredict.result[oppDate];
         }
     }
     saveState();
@@ -1514,10 +1521,9 @@ function saveOppData() {
 function removeOppData() {
     if (!oppDate) return;
     if (oppType === 'predict') {
-        delete state.oppPredict[oppRow][oppDate];
+        if (state.oppPredict.predict) delete state.oppPredict.predict[oppDate];
     } else {
-        const resultKey = oppRow === 'row1' ? 'row1Result' : 'row2Result';
-        delete state.oppPredict[resultKey][oppDate];
+        if (state.oppPredict.result) delete state.oppPredict.result[oppDate];
     }
     saveState();
     closeOppModal();
@@ -1557,6 +1563,7 @@ function init() {
                     marketStats: cloudData.marketStats || {},
                     oppPredict: cloudData.oppPredict || {}
                 };
+                migrateOppPredict();
                 saveState();
                 windowEndDate = getRecentTradingDay();
                 renderLibrary();
@@ -1730,8 +1737,9 @@ function loadState() {
         state.phaseNotes = saved.phaseNotes || {};
         state.charStyle = saved.charStyle || {};
         state.marketStats = saved.marketStats || {};
-        state.oppPredict = saved.oppPredict || { row1: {}, row1Result: {}, row2: {}, row2Result: {} };
-    } catch(e) { state = { themes: [], data: {}, stocks: {}, holidays: [], marketAtm: {}, stockData: {}, markedDates: {}, dailyNotes: {}, dailyPredictions: {}, marketPhases: {}, phaseNotes: {}, charStyle: {}, marketStats: {}, oppPredict: { row1: {}, row1Result: {}, row2: {}, row2Result: {} } }; }
+        state.oppPredict = saved.oppPredict || { predict: {}, result: {} };
+        migrateOppPredict();
+    } catch(e) { state = { themes: [], data: {}, stocks: {}, holidays: [], marketAtm: {}, stockData: {}, markedDates: {}, dailyNotes: {}, dailyPredictions: {}, marketPhases: {}, phaseNotes: {}, charStyle: {}, marketStats: {}, oppPredict: { predict: {}, result: {} } }; }
 }
 
 function saveState() {
@@ -1821,6 +1829,49 @@ function shiftTradingDays(dateStr, n) {
 }
 function getWindowDates() {
     return getTradingDays(windowEndDate, 5);
+}
+
+// v6.1.7: 机会预测数据模型迁移。
+// 旧模型：预测按「行+填写日」分散存储（row1/row2），验证按「行+验证日」分散存储（row1Result/row2Result）。
+//   缺陷：每个日期在两行里分别是预测格/验证格，格子身份随窗口位置滑动而在行之间翻转；
+//   9/2 在 row1 预测格填的数据存到 row1["9/2"]，翻窗口后 9/2 的预测格出现在 row2，渲染读 row2["9/2"] → 空 → 数据"消失"。
+// 新模型：predict map（key=填写预测的交易日，内容=预测下一交易日的股票）与 result map（key=验证交易日）全局唯一，
+//   两行渲染都读同一份数据，格子身份如何翻转都能正确显示；验证弹窗还能自动带出上一交易日的预测股票名。
+function migrateOppPredict() {
+    try {
+        if (!state.oppPredict || typeof state.oppPredict !== 'object') state.oppPredict = {};
+        var op = state.oppPredict;
+        var predMap = {};
+        var resMap = {};
+        function mergePred(date, arr) {
+            if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !Array.isArray(arr)) return;
+            var vals = arr.filter(function(x){return x;});
+            if (vals.length === 0) return;
+            if (!predMap[date]) { predMap[date] = vals.slice(0,3); return; }
+            vals.forEach(function(s) { if (predMap[date].indexOf(s) < 0 && predMap[date].length < 3) predMap[date].push(s); });
+        }
+        function mergeRes(date, arr) {
+            if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !Array.isArray(arr)) return;
+            if (!resMap[date]) resMap[date] = ['', '', ''];
+            for (var i = 0; i < 3; i++) { if (arr[i] && !resMap[date][i]) resMap[date][i] = arr[i]; }
+        }
+        // 新模型数据（predict/result 已存在）直接保留
+        if (op.predict && typeof op.predict === 'object') {
+            Object.keys(op.predict).forEach(function(k){ mergePred(k, op.predict[k]); });
+        }
+        if (op.result && typeof op.result === 'object') {
+            Object.keys(op.result).forEach(function(k){ mergeRes(k, op.result[k]); });
+        }
+        // 旧模型四格迁移
+        if (op.row1 && typeof op.row1 === 'object') Object.keys(op.row1).forEach(function(k){ mergePred(k, op.row1[k]); });
+        if (op.row2 && typeof op.row2 === 'object') Object.keys(op.row2).forEach(function(k){ mergePred(k, op.row2[k]); });
+        if (op.row1Result && typeof op.row1Result === 'object') Object.keys(op.row1Result).forEach(function(k){ mergeRes(k, op.row1Result[k]); });
+        if (op.row2Result && typeof op.row2Result === 'object') Object.keys(op.row2Result).forEach(function(k){ mergeRes(k, op.row2Result[k]); });
+        state.oppPredict = { predict: predMap, result: resMap };
+    } catch(e) {
+        console.warn('migrateOppPredict failed:', e);
+        state.oppPredict = { predict: {}, result: {} };
+    }
 }
 
 // v6.1.4: 默认窗口为最近5个交易日；若该窗口整周无数据（数据未更新/长假后打开），
@@ -2304,8 +2355,10 @@ function renderMainView() {
         const isPredict = (i % 2 === 0);
         const pairCls = isPredict ? ' opp-pair-left' : ' opp-pair-right';
         let cellContent = '';
+        const _oppPredictMap = state.oppPredict.predict || {};
+        const _oppResultMap = state.oppPredict.result || {};
         if (isPredict) {
-            const stocks = (state.oppPredict.row1[d] || []);
+            const stocks = (_oppPredictMap[d] || []);
             if (stocks.length > 0) {
                 stocks.forEach(s => {
                     cellContent += '<span class="opp-stock-name">' + s + '</span>';
@@ -2313,9 +2366,9 @@ function renderMainView() {
             } else {
                 cellContent = '<span style="color:#484f58">预测</span>';
             }
-            html += '<div class="cell cell-none' + todayCls + markedCls + pairCls + ' opp-predict-cell" onclick="openOppModal(\'row1\',\'' + d + '\',\'predict\')">' + cellContent + '</div>';
+            html += '<div class="cell cell-none' + todayCls + markedCls + pairCls + ' opp-predict-cell" onclick="openOppModal(\'row1\',\'' + d + '\',\'predict\')" title="' + formatDateShort(d) + ' 预测下一交易日">' + cellContent + '</div>';
         } else {
-            const results = (state.oppPredict.row1Result[d] || []);
+            const results = (_oppResultMap[d] || []);
             if (results.length > 0) {
                 results.forEach((r, idx) => {
                     if (r) {
@@ -2327,7 +2380,7 @@ function renderMainView() {
             } else {
                 cellContent = '<span style="color:#484f58">验证</span>';
             }
-            html += '<div class="cell cell-none' + todayCls + markedCls + pairCls + ' opp-predict-cell" onclick="openOppModal(\'row1\',\'' + d + '\',\'result\')">' + cellContent + '</div>';
+            html += '<div class="cell cell-none' + todayCls + markedCls + pairCls + ' opp-predict-cell" onclick="openOppModal(\'row1\',\'' + d + '\',\'result\')" title="验证 ' + formatDateShort(d) + '（对照上一交易日预测）">' + cellContent + '</div>';
         }
     });
     html += '<div class="trend-icon"></div>';
@@ -2347,8 +2400,10 @@ function renderMainView() {
         const isPredict = (i % 2 === 1);
         const pairCls = isPredict ? ' opp-pair-left' : ' opp-pair-right';
         let cellContent = '';
+        const _oppPredictMap2 = state.oppPredict.predict || {};
+        const _oppResultMap2 = state.oppPredict.result || {};
         if (isPredict) {
-            const stocks = (state.oppPredict.row2[d] || []);
+            const stocks = (_oppPredictMap2[d] || []);
             if (stocks.length > 0) {
                 stocks.forEach(s => {
                     cellContent += '<span class="opp-stock-name">' + s + '</span>';
@@ -2356,9 +2411,9 @@ function renderMainView() {
             } else {
                 cellContent = '<span style="color:#484f58">预测</span>';
             }
-            html += '<div class="cell cell-none' + todayCls + markedCls + pairCls + ' opp-predict-cell" onclick="openOppModal(\'row2\',\'' + d + '\',\'predict\')">' + cellContent + '</div>';
+            html += '<div class="cell cell-none' + todayCls + markedCls + pairCls + ' opp-predict-cell" onclick="openOppModal(\'row2\',\'' + d + '\',\'predict\')" title="' + formatDateShort(d) + ' 预测下一交易日">' + cellContent + '</div>';
         } else {
-            const results = (state.oppPredict.row2Result[d] || []);
+            const results = (_oppResultMap2[d] || []);
             if (results.length > 0) {
                 results.forEach((r, idx) => {
                     if (r) {
@@ -2370,7 +2425,7 @@ function renderMainView() {
             } else {
                 cellContent = '<span style="color:#484f58">验证</span>';
             }
-            html += '<div class="cell cell-none' + todayCls + markedCls + pairCls + ' opp-predict-cell" onclick="openOppModal(\'row2\',\'' + d + '\',\'result\')">' + cellContent + '</div>';
+            html += '<div class="cell cell-none' + todayCls + markedCls + pairCls + ' opp-predict-cell" onclick="openOppModal(\'row2\',\'' + d + '\',\'result\')" title="验证 ' + formatDateShort(d) + '（对照上一交易日预测）">' + cellContent + '</div>';
         }
     });
     html += '<div class="trend-icon"></div>';
