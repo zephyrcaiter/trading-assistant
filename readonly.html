@@ -1425,7 +1425,7 @@ let oppRow = null;
 let oppDate = null;
 let oppType = null; // 'predict' or 'result'
 let oppDraftStocks = ['', '', ''];
-let oppDraftResults = ['', '', ''];
+let oppDraftResults = [{s:'',p:''},{s:'',p:''},{s:'',p:''}];
 
 function openOppModal(row, date, type) {
     oppRow = row;
@@ -1457,19 +1457,25 @@ function openOppModal(row, date, type) {
         document.getElementById('opp-modal-hint').textContent = rowLabel + ' - 验证 ' + dateLabel + '（对照 ' + prevLabel + ' 的预测）';
         const predictedStocks = prevD ? (predictMap[prevD] || []) : [];
         const results = resultMap[date] || [];
-        oppDraftResults = [results[0] || '', results[1] || '', results[2] || ''];
+        oppDraftResults = [
+            results[0] && typeof results[0] === 'object' ? {s:results[0].s||'',p:results[0].p||''} : {s:results[0]||'',p:''},
+            results[1] && typeof results[1] === 'object' ? {s:results[1].s||'',p:results[1].p||''} : {s:results[1]||'',p:''},
+            results[2] && typeof results[2] === 'object' ? {s:results[2].s||'',p:results[2].p||''} : {s:results[2]||'',p:''}
+        ];
         let html = '<div style="display:flex;flex-direction:column;gap:10px">';
         for (let i = 0; i < 3; i++) {
-            const val = oppDraftResults[i];
+            const val = oppDraftResults[i].s;
+            const pctVal = oppDraftResults[i].p;
             const name = predictedStocks[i] || ('股票' + (i+1));
-            html += '<div style="display:flex;align-items:center;gap:10px">';
-            html += '<span style="width:72px;font-size:12px;color:#c9d1d9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + String(name).replace(/"/g, '&quot;') + '">' + name + '</span>';
-            html += '<button class="btn" id="opp-res-' + i + '-win" onclick="selectOppResult(' + i + ',\'盈\')" style="flex:1;padding:10px;font-size:14px;font-weight:700;border-radius:6px;';
+            html += '<div style="display:flex;align-items:center;gap:8px">';
+            html += '<span style="width:62px;font-size:12px;color:#c9d1d9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="' + String(name).replace(/"/g, '&quot;') + '">' + name + '</span>';
+            html += '<button class="btn" id="opp-res-' + i + '-win" onclick="selectOppResult(' + i + ',\'盈\')" style="flex:1;padding:8px;font-size:13px;font-weight:700;border-radius:6px;';
             html += val === '盈' ? 'background:rgba(218,54,51,0.2);color:#da3633;border:2px solid #da3633' : 'background:#0d1117;color:#8b949e;border:1px solid #30363d';
             html += '">盈</button>';
-            html += '<button class="btn" id="opp-res-' + i + '-lose" onclick="selectOppResult(' + i + ',\'亏\')" style="flex:1;padding:10px;font-size:14px;font-weight:700;border-radius:6px;';
+            html += '<button class="btn" id="opp-res-' + i + '-lose" onclick="selectOppResult(' + i + ',\'亏\')" style="flex:1;padding:8px;font-size:13px;font-weight:700;border-radius:6px;';
             html += val === '亏' ? 'background:rgba(35,134,54,0.2);color:#238636;border:2px solid #238636' : 'background:#0d1117;color:#8b949e;border:1px solid #30363d';
             html += '">亏</button>';
+            html += '<input type="number" id="opp-pct-' + i + '" value="' + pctVal + '" placeholder="%" step="0.1" oninput="updateOppPct(' + i + ',this.value)" style="width:58px;padding:8px 4px;font-size:12px;text-align:center;background:#0d1117;border:1px solid #30363d;border-radius:6px;color:#e6edf3;outline:none" title="盈亏百分比">';
             html += '</div>';
         }
         html += '</div>';
@@ -1478,16 +1484,21 @@ function openOppModal(row, date, type) {
 
     const hasData = type === 'predict' ?
         ((predictMap[date] || []).length > 0) :
-        ((resultMap[date] || []).filter(function(r){return r;}).length > 0);
+        ((resultMap[date] || []).filter(function(r){return r && (typeof r === 'string' ? r : r.s);}).length > 0);
     document.getElementById('opp-remove-btn').style.display = hasData ? '' : 'none';
     document.getElementById('opp-modal').classList.add('show');
     if (type === 'predict') setTimeout(() => document.getElementById('opp-stock-0').focus(), 100);
 }
 
 function selectOppResult(idx, val) {
-    oppDraftResults[idx] = val;
-    document.getElementById('opp-res-' + idx + '-win').style.cssText = 'flex:1;padding:10px;font-size:14px;font-weight:700;border-radius:6px;' + (val === '盈' ? 'background:rgba(218,54,51,0.2);color:#da3633;border:2px solid #da3633' : 'background:#0d1117;color:#8b949e;border:1px solid #30363d');
-    document.getElementById('opp-res-' + idx + '-lose').style.cssText = 'flex:1;padding:10px;font-size:14px;font-weight:700;border-radius:6px;' + (val === '亏' ? 'background:rgba(35,134,54,0.2);color:#238636;border:2px solid #238636' : 'background:#0d1117;color:#8b949e;border:1px solid #30363d');
+    var cur = oppDraftResults[idx];
+    oppDraftResults[idx] = (cur && typeof cur === 'object') ? {s:val,p:cur.p||''} : {s:val,p:''};
+    document.getElementById('opp-res-' + idx + '-win').style.cssText = 'flex:1;padding:8px;font-size:13px;font-weight:700;border-radius:6px;' + (val === '盈' ? 'background:rgba(218,54,51,0.2);color:#da3633;border:2px solid #da3633' : 'background:#0d1117;color:#8b949e;border:1px solid #30363d');
+    document.getElementById('opp-res-' + idx + '-lose').style.cssText = 'flex:1;padding:8px;font-size:13px;font-weight:700;border-radius:6px;' + (val === '亏' ? 'background:rgba(35,134,54,0.2);color:#238636;border:2px solid #238636' : 'background:#0d1117;color:#8b949e;border:1px solid #30363d');
+}
+function updateOppPct(idx, val) {
+    var cur = oppDraftResults[idx];
+    oppDraftResults[idx] = (cur && typeof cur === 'object') ? {s:cur.s||'',p:val} : {s:'',p:val};
 }
 
 function saveOppData() {
@@ -1506,9 +1517,11 @@ function saveOppData() {
             delete state.oppPredict.predict[oppDate];
         }
     } else {
-        const results = oppDraftResults.filter(r => r);
+        const results = oppDraftResults.filter(r => r && (typeof r === 'object' ? r.s : r));
         if (results.length > 0) {
-            state.oppPredict.result[oppDate] = oppDraftResults;
+            state.oppPredict.result[oppDate] = oppDraftResults.map(function(r) {
+                return (r && typeof r === 'object') ? {s:r.s||'',p:r.p||''} : {s:r||'',p:''};
+            });
         } else {
             delete state.oppPredict.result[oppDate];
         }
@@ -1852,8 +1865,13 @@ function migrateOppPredict() {
         }
         function mergeRes(date, arr) {
             if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !Array.isArray(arr)) return;
-            if (!resMap[date]) resMap[date] = ['', '', ''];
-            for (var i = 0; i < 3; i++) { if (arr[i] && !resMap[date][i]) resMap[date][i] = arr[i]; }
+            if (!resMap[date]) resMap[date] = [{s:'',p:''},{s:'',p:''},{s:'',p:''}];
+            for (var i = 0; i < 3; i++) {
+                if (!arr[i]) continue;
+                var obj = typeof arr[i] === 'string' ? {s:arr[i],p:''} : {s:arr[i].s||'',p:arr[i].p||''};
+                if (!obj.s) continue;
+                if (!resMap[date][i].s) resMap[date][i] = obj;
+            }
         }
         // 新模型数据（predict/result 已存在）直接保留
         if (op.predict && typeof op.predict === 'object') {
@@ -2372,8 +2390,13 @@ function renderMainView() {
             if (results.length > 0) {
                 results.forEach((r, idx) => {
                     if (r) {
-                        const cls = r === '盈' ? 'win' : 'lose';
-                        cellContent += '<span class="opp-result-item ' + cls + '">' + (r === '盈' ? '\u2713' : '\u2717') + '</span>';
+                        var _s = typeof r === 'object' ? (r.s||'') : r;
+                        var _p = typeof r === 'object' ? (r.p||'') : '';
+                        if (_s) {
+                            var cls = _s === '盈' ? 'win' : 'lose';
+                            var _txt = (_s === '盈' ? '\u2713' : '\u2717') + (_p ? ' ' + _p + '%' : '');
+                            cellContent += '<span class="opp-result-item ' + cls + '">' + _txt + '</span>';
+                        }
                     }
                 });
                 if (!cellContent) cellContent = '<span style="color:#484f58">验证</span>';
@@ -2417,8 +2440,13 @@ function renderMainView() {
             if (results.length > 0) {
                 results.forEach((r, idx) => {
                     if (r) {
-                        const cls = r === '盈' ? 'win' : 'lose';
-                        cellContent += '<span class="opp-result-item ' + cls + '">' + (r === '盈' ? '\u2713' : '\u2717') + '</span>';
+                        var _s = typeof r === 'object' ? (r.s||'') : r;
+                        var _p = typeof r === 'object' ? (r.p||'') : '';
+                        if (_s) {
+                            var cls = _s === '盈' ? 'win' : 'lose';
+                            var _txt = (_s === '盈' ? '\u2713' : '\u2717') + (_p ? ' ' + _p + '%' : '');
+                            cellContent += '<span class="opp-result-item ' + cls + '">' + _txt + '</span>';
+                        }
                     }
                 });
                 if (!cellContent) cellContent = '<span style="color:#484f58">验证</span>';
@@ -3218,6 +3246,7 @@ init();
     window.cyclePhase = function() {};
     window.cyclePhaseInGrid = function() {};
     window.selectOppResult = function() {};
+    window.updateOppPct = function() {};
     window.toggleCharStatus = function() {};
     
     // v6.1: Make all inputs/textareas readonly (can view but not edit)
