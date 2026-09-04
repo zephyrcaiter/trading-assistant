@@ -1485,6 +1485,13 @@ function init() {
     // v6.1.3 FIX: 云端拉取失败/无数据时，必须降级到同域data.json，
     // 避免 raw.githubusercontent.com 国内不可达 + localStorage 为空时页面无数据
     var applyLoadedData = function(d, source) {
+        // v6.1.9: protect local data from being overwritten by stale cloud/data.json
+        var localTs = state._lastSave || 0;
+        var remoteTs = d._lastSave || 0;
+        if (localTs > 0 && localTs >= remoteTs) {
+            console.log('[v6.1.9] Local data is newer (' + localTs + ' >= ' + remoteTs + '), skip ' + source);
+            return;
+        }
         state = {
             themes: d.themes || [],
             data: d.data || {},
@@ -1702,14 +1709,16 @@ function loadState() {
         state.charStyle = saved.charStyle || {};
         state.marketStats = saved.marketStats || {};
         state.oppPredict = saved.oppPredict || { predict: {}, result: {} };
+        state._lastSave = saved._lastSave || 0;
         migrateOppPredict();
     } catch(e) { state = { themes: [], data: {}, stocks: {}, holidays: [], marketAtm: {}, stockData: {}, markedDates: {}, dailyNotes: {}, dailyPredictions: {}, marketPhases: {}, phaseNotes: {}, charStyle: {}, marketStats: {}, oppPredict: { predict: {}, result: {} } }; }
 }
 
 function saveState() {
+    state._lastSave = Date.now();
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     // 云端同步（异步，不阻塞）
-    if (getGhToken()) { ghSaveData().catch(()=>{}); }
+    if (getGhToken()) { ghSaveData().catch((e)=>{ console.warn('Cloud sync failed:', e); }); }
 }
 
 // ===== Date helpers =====
