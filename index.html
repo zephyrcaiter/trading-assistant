@@ -1024,6 +1024,29 @@ header h1 { font-size: 22px; color: #58a6ff; }
     gap: 8px;
     justify-content: space-between;
 }
+
+/* === 机会与风险 Section === */
+.opp-risk-row { display: grid; grid-template-columns: repeat(var(--date-cols), 1fr); gap: 2px; }
+.opp-risk-cell { min-height: 36px; background: #161b22; border: 1px solid #21262d; border-radius: 4px; cursor: pointer; display: flex; flex-wrap: wrap; gap: 2px; padding: 2px; align-items: flex-start; align-content: flex-start; transition: background .15s; }
+.opp-risk-cell:hover { background: #1c2128; }
+.opp-risk-tag { font-size: 9px; padding: 1px 4px; border-radius: 3px; color: #fff; white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; line-height: 1.4; }
+.opp-risk-tag.type-opp { background: rgba(248,81,81,.7); }
+.opp-risk-tag.type-risk { background: rgba(63,185,80,.7); }
+.opp-risk-tag .img-dot { margin-left: 2px; font-size: 8px; }
+#opp-risk-modal .or-entry { background: #161b22; border: 1px solid #30363d; border-radius: 6px; padding: 10px; margin-bottom: 8px; }
+#opp-risk-modal .or-entry-header { display: flex; gap: 6px; align-items: center; margin-bottom: 6px; }
+#opp-risk-modal .or-entry-header input { flex: 1; background: #0d1117; border: 1px solid #30363d; border-radius: 4px; color: #e6edf3; padding: 4px 8px; font-size: 13px; }
+#opp-risk-modal .or-type-btn { padding: 4px 10px; border-radius: 4px; border: none; cursor: pointer; font-size: 12px; font-weight: 600; color: #fff; }
+#opp-risk-modal .or-type-btn.opp { background: rgba(248,81,81,.8); }
+#opp-risk-modal .or-type-btn.risk { background: rgba(63,185,80,.8); }
+#opp-risk-modal .or-del-btn { background: none; border: 1px solid #f8514966; color: #f85149; border-radius: 4px; padding: 2px 8px; cursor: pointer; font-size: 11px; }
+#opp-risk-modal .or-img-area { margin-top: 6px; position: relative; display: inline-block; }
+#opp-risk-modal .or-img-area img { max-width: 120px; max-height: 80px; border-radius: 4px; border: 1px solid #30363d; }
+#opp-risk-modal .or-img-upload-btn { display: inline-block; font-size: 11px; color: #58a6ff; cursor: pointer; margin-top: 4px; }
+#opp-risk-modal .or-img-remove { position: absolute; top: -6px; right: -6px; background: #f85149; color: #fff; border: none; border-radius: 50%; width: 16px; height: 16px; font-size: 10px; cursor: pointer; line-height: 16px; text-align: center; }
+#opp-risk-modal .or-add-btn { width: 100%; padding: 6px; background: #21262d; border: 1px dashed #30363d; border-radius: 6px; color: #8b949e; cursor: pointer; font-size: 12px; text-align: center; }
+#opp-risk-modal .or-add-btn:hover { background: #30363d; color: #e6edf3; }
+
 </style>
 </head>
 <body>
@@ -1200,6 +1223,19 @@ header h1 { font-size: 22px; color: #58a6ff; }
     </div>
 </div>
 
+
+<!-- Opportunity & Risk Modal -->
+<div class="modal-overlay" id="opp-risk-modal">
+    <div class="modal-box" style="max-width:420px;max-height:80vh;display:flex;flex-direction:column">
+        <h3 id="opp-risk-modal-title">机会与风险</h3>
+        <div id="opp-risk-modal-body" style="flex:1;overflow-y:auto;margin-top:8px"></div>
+        <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px">
+            <button class="btn btn-primary btn-sm" onclick="saveOppRisk()">保存</button>
+            <button class="btn btn-sm" onclick="closeOppRiskModal()">关闭</button>
+        </div>
+    </div>
+</div>
+
 <!-- Guide Modal -->
 <div class="modal-overlay" id="guide-modal">
     <div class="library-modal-box" style="max-width:760px;max-height:85vh">
@@ -1225,7 +1261,7 @@ const STORAGE_KEY = 'themeStrengthV3';
     const GH_TOKEN_KEY = 'gh_sync_token';
 // Default themes to pre-populate on first load
 const DEFAULT_THEMES = ['PCB', 'CPO', '创新药', 'AI应用', '机器人', '固态电池', '低空经济', '半导体', '华为概念'];
-let state = { themes: [], data: {}, stocks: {}, holidays: [], marketAtm: {}, stockData: {}, markedDates: {}, dailyNotes: {}, dailyPredictions: {}, marketPhases: {}, phaseNotes: {}, charStyle: {}, marketStats: {}, oppPredict: { predict: {}, result: {} } };
+let state = { themes: [], data: {}, stocks: {}, holidays: [], marketAtm: {}, stockData: {}, markedDates: {}, dailyNotes: {}, dailyPredictions: {}, marketPhases: {}, phaseNotes: {}, charStyle: {}, marketStats: {}, oppPredict: { predict: {}, result: {} }, oppRisk: {} };
 let windowEndDate = null;
 let expandedTheme = null;
 let currentView = 'main';
@@ -1474,6 +1510,117 @@ function closeOppModal() {
     oppRow = null; oppDate = null; oppType = null;
 }
 
+// ===== 机会与风险 Feature =====
+let _orDate = null;
+let _orDraftEntries = [];
+
+function compressOppRiskImage(file, cb) {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        var img = new Image();
+        img.onload = function() {
+            var canvas = document.createElement('canvas');
+            var maxDim = 300;
+            var w = img.width, h = img.height;
+            if (w > h) { if (w > maxDim) { h = h * maxDim / w; w = maxDim; } }
+            else { if (h > maxDim) { w = w * maxDim / h; h = maxDim; } }
+            canvas.width = w; canvas.height = h;
+            var ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, w, h);
+            cb(canvas.toDataURL('image/jpeg', 0.6));
+        };
+        img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+}
+
+function openOppRiskModal(date) {
+    _orDate = date;
+    var entries = (state.oppRisk && state.oppRisk[date]) || [];
+    _orDraftEntries = JSON.parse(JSON.stringify(entries));
+    document.getElementById('opp-risk-modal-title').textContent = '机会与风险 - ' + formatDateShort(date);
+    renderOppRiskEntries();
+    document.getElementById('opp-risk-modal').classList.add('show');
+}
+
+function renderOppRiskEntries() {
+    var body = document.getElementById('opp-risk-modal-body');
+    var html = '';
+    _orDraftEntries.forEach(function(entry, idx) {
+        var typeCls = entry.type === '机会' ? 'opp' : 'risk';
+        html += '<div class="or-entry">';
+        html += '<div class="or-entry-header">';
+        html += '<input type="text" value="' + (entry.name || '').replace(/"/g, '&quot;') + '" placeholder="股票名称" maxlength="12" onchange="_orDraftEntries[' + idx + '].name=this.value">';
+        html += '<button class="or-type-btn ' + typeCls + '" onclick="toggleOppRiskType(' + idx + ')">' + entry.type + '</button>';
+        html += '<button class="or-del-btn" onclick="removeOppRiskEntry(' + idx + ')">✕</button>';
+        html += '</div>';
+        if (entry.image) {
+            html += '<div class="or-img-area"><img src="' + entry.image + '"><button class="or-img-remove" onclick="removeOppRiskImage(' + idx + ')">✕</button></div>';
+        } else {
+            html += '<span class="or-img-upload-btn" onclick="triggerOppRiskImageUpload(' + idx + ')">📷 添加图片</span>';
+        }
+        html += '</div>';
+    });
+    html += '<div class="or-add-btn" onclick="addOppRiskEntry()">+ 添加条目</div>';
+    body.innerHTML = html;
+}
+
+function addOppRiskEntry() {
+    _orDraftEntries.push({ name: '', type: '机会', image: '' });
+    renderOppRiskEntries();
+}
+
+function removeOppRiskEntry(idx) {
+    _orDraftEntries.splice(idx, 1);
+    renderOppRiskEntries();
+}
+
+function removeOppRiskImage(idx) {
+    _orDraftEntries[idx].image = '';
+    renderOppRiskEntries();
+}
+
+function toggleOppRiskType(idx) {
+    _orDraftEntries[idx].type = _orDraftEntries[idx].type === '机会' ? '风险' : '机会';
+    renderOppRiskEntries();
+}
+
+function triggerOppRiskImageUpload(idx) {
+    var inp = document.createElement('input');
+    inp.type = 'file'; inp.accept = 'image/*';
+    inp.onchange = function(e) {
+        var file = e.target.files[0];
+        if (!file) return;
+        compressOppRiskImage(file, function(dataUrl) {
+            _orDraftEntries[idx].image = dataUrl;
+            renderOppRiskEntries();
+        });
+    };
+    inp.click();
+}
+
+function saveOppRisk() {
+    if (!_orDate) return;
+    // Filter out empty entries
+    _orDraftEntries = _orDraftEntries.filter(function(e) { return e.name.trim() || e.image; });
+    if (!state.oppRisk) state.oppRisk = {};
+    if (_orDraftEntries.length > 0) {
+        state.oppRisk[_orDate] = _orDraftEntries;
+    } else {
+        delete state.oppRisk[_orDate];
+    }
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
+    saveState();
+    closeOppRiskModal();
+    renderMainView();
+}
+
+function closeOppRiskModal() {
+    document.getElementById('opp-risk-modal').classList.remove('show');
+    _orDate = null; _orDraftEntries = [];
+}
+
+
 let calendarYear = new Date().getFullYear();
 let calendarMonth = new Date().getMonth();
 
@@ -1506,7 +1653,8 @@ function init() {
             phaseNotes: d.phaseNotes || {},
             charStyle: d.charStyle || {},
             marketStats: d.marketStats || {},
-            oppPredict: d.oppPredict || {}
+            oppPredict: d.oppPredict || {},
+            oppRisk: d.oppRisk || {}
         };
         migrateOppPredict();
         // 只写本地缓存，不调用 saveState()（避免触发 data.json 回写）
@@ -1709,9 +1857,10 @@ function loadState() {
         state.charStyle = saved.charStyle || {};
         state.marketStats = saved.marketStats || {};
         state.oppPredict = saved.oppPredict || { predict: {}, result: {} };
+        state.oppRisk = saved.oppRisk || {};
         state._lastSave = saved._lastSave || 0;
         migrateOppPredict();
-    } catch(e) { state = { themes: [], data: {}, stocks: {}, holidays: [], marketAtm: {}, stockData: {}, markedDates: {}, dailyNotes: {}, dailyPredictions: {}, marketPhases: {}, phaseNotes: {}, charStyle: {}, marketStats: {}, oppPredict: { predict: {}, result: {} } }; }
+    } catch(e) { state = { themes: [], data: {}, stocks: {}, holidays: [], marketAtm: {}, stockData: {}, markedDates: {}, dailyNotes: {}, dailyPredictions: {}, marketPhases: {}, phaseNotes: {}, charStyle: {}, marketStats: {}, oppPredict: { predict: {}, result: {} }, oppRisk: {} }; }
 }
 
 function saveState() {
@@ -2419,6 +2568,32 @@ function renderMainView() {
     html += '<div class="trend-icon"></div>';
     html += '</div>';
 
+
+
+    // === 机会与风险 Section ===
+    html += '<div class="section-divider"><span>⚡ 机会与风险</span></div>';
+    html += '<div class="grid-row atm-row">';
+    html += '<div class="theme-label"><div class="theme-label-name" style="font-size:10px">机会/风险</div></div>';
+    dates.forEach(function(d) {
+        var todayCls = isToday(d) ? ' cell-today' : '';
+        var marked = state.markedDates[d];
+        var markedCls = marked ? ' marked-cell' : '';
+        var entries = (state.oppRisk && state.oppRisk[d]) || [];
+        var cellContent = '';
+        if (entries.length > 0) {
+            entries.forEach(function(e) {
+                var tagCls = e.type === '机会' ? 'type-opp' : 'type-risk';
+                var displayName = (e.name || '').substring(0, 4);
+                var imgDot = e.image ? '<span class="img-dot">📷</span>' : '';
+                cellContent += '<span class="opp-risk-tag ' + tagCls + '">' + displayName + imgDot + '</span>';
+            });
+        } else {
+            cellContent = '<span style="color:#484f58;font-size:10px">记录</span>';
+        }
+        html += '<div class="opp-risk-cell' + todayCls + markedCls + '" onclick="openOppRiskModal(\'' + d + '\')">' + cellContent + '</div>';
+    });
+    html += '<div class="trend-icon"></div>';
+    html += '</div>';
 
     // Legend
     html += '<div class="legend">';
