@@ -303,6 +303,8 @@ header h1 { font-size: 22px; color: #58a6ff; }
 .cell-strong { background: #da3633; color: #fff; border-color: #f85149; }
 .cell-stable { background: #1f6feb; color: #fff; border-color: #388bfd; }
 .cell-weak { background: #238636; color: #fff; border-color: #2ea043; }
+.cell-strong-to-weak { background: linear-gradient(135deg, #da3633 0%, #238636 100%); color: #fff; border-color: #d29922; font-size: 11px; letter-spacing: -0.5px; }
+.cell-weak-to-strong { background: linear-gradient(135deg, #238636 0%, #da3633 100%); color: #fff; border-color: #3fb950; font-size: 11px; letter-spacing: -0.5px; }
 .cell-none { background: #21262d; color: #484f58; border-color: #30363d; }
 .cell-none:hover { background: #2d333b; }
 .cell-today { box-shadow: 0 0 0 2px #58a6ff; }
@@ -485,6 +487,8 @@ header h1 { font-size: 22px; color: #58a6ff; }
 .legend-dot.strong { background: #da3633; }
 .legend-dot.stable { background: #1f6feb; }
 .legend-dot.weak { background: #238636; }
+.legend-dot.strong-to-weak { background: linear-gradient(135deg, #da3633 0%, #238636 100%); }
+.legend-dot.weak-to-strong { background: linear-gradient(135deg, #238636 0%, #da3633 100%); }
 .legend-dot.none { background: #21262d; border: 1px solid #30363d; }
 .click-hint { margin-top: 6px; font-size: 12px; color: #6e7681; }
 
@@ -2159,8 +2163,12 @@ function toggleMarketCell(date) {
     if (!current) {
         state.marketAtm[date] = '强';
     } else if (current === '强') {
+        state.marketAtm[date] = '强转弱';
+    } else if (current === '强转弱') {
         state.marketAtm[date] = '稳';
     } else if (current === '稳') {
+        state.marketAtm[date] = '弱转强';
+    } else if (current === '弱转强') {
         state.marketAtm[date] = '弱';
     } else {
         delete state.marketAtm[date];
@@ -2357,8 +2365,12 @@ function renderMainView() {
         const markedCls = marked ? ' marked-cell' : '';
         if (status === '强') {
             html += `<div class="cell cell-strong${todayCls}${markedCls}" onclick="toggleMarketCell('${d}')">强</div>`;
+        } else if (status === '强转弱') {
+            html += `<div class="cell cell-strong-to-weak${todayCls}${markedCls}" onclick="toggleMarketCell('${d}')">强→弱</div>`;
         } else if (status === '稳') {
             html += `<div class="cell cell-stable${todayCls}${markedCls}" onclick="toggleMarketCell('${d}')">稳</div>`;
+        } else if (status === '弱转强') {
+            html += `<div class="cell cell-weak-to-strong${todayCls}${markedCls}" onclick="toggleMarketCell('${d}')">弱→强</div>`;
         } else if (status === '弱') {
             html += `<div class="cell cell-weak${todayCls}${markedCls}" onclick="toggleMarketCell('${d}')">弱</div>`;
         } else {
@@ -2560,12 +2572,14 @@ function renderMainView() {
     // Legend
     html += '<div class="legend">';
     html += '<div class="legend-item"><div class="legend-dot strong"></div>强</div>';
+    html += '<div class="legend-item"><div class="legend-dot strong-to-weak"></div>强转弱</div>';
     html += '<div class="legend-item"><div class="legend-dot stable"></div>稳</div>';
+    html += '<div class="legend-item"><div class="legend-dot weak-to-strong"></div>弱转强</div>';
     html += '<div class="legend-item"><div class="legend-dot weak"></div>弱</div>';
     html += '<div class="legend-item"><div class="legend-dot none"></div>无数据</div>';
     html += '<div class="legend-item" style="margin-left:auto">⬆️走强 ⬇️走弱 ⚡翻转 ➡️稳定 ★新出</div>';
     html += '</div>';
-    html += '<div class="click-hint">💡 点击格子切换：空 → 强 → 稳 → 弱 → 清除　|　点击日期表头标注关键日　|　点击题材名称进入详情</div>';
+    html += '<div class="click-hint">💡 题材格：空→强→稳→弱→清除　|　整体氛围格：空→强→强转弱→稳→弱转强→弱→清除　|　点击日期表头标注关键日　|　点击题材名称进入详情</div>';
 
     content.innerHTML = html;
 }
@@ -2599,6 +2613,8 @@ function calcMarketTrend(dates) {
     const sorted = records.slice().sort((a,b) => a.date.localeCompare(b.date));
     const recent = sorted[sorted.length-1];
     const prev = sorted[sorted.length-2];
+    if (recent.status === '弱转强') return '⬆️';
+    if (recent.status === '强转弱') return '⬇️';
     let strongStreak = 0;
     for (let i = sorted.length-1; i >= 0; i--) {
         if (sorted[i].status === '强') strongStreak++; else break;
